@@ -281,7 +281,7 @@ namespace Antigravity.Editor
     ""configurations"": [
         {
             ""name"": ""Attach to Unity"",
-            ""type"": ""vstuc"",
+            ""type"": ""unity"",
             ""request"": ""attach""
         }
      ]
@@ -318,7 +318,7 @@ namespace Antigravity.Editor
 					launch.Add(configurationsKey, configurations);
 				}
 
-				if (configurations.Linq.Any(entry => entry.Value[typeKey].Value == "vstuc"))
+				if (configurations.Linq.Any(entry => entry.Value[typeKey].Value == "unity"))
 					return;
 
 				var defaultContent = JSONNode.Parse(DefaultLaunchFileContent);
