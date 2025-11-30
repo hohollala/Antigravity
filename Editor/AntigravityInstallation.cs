@@ -173,7 +173,35 @@ namespace Antigravity.Editor
 				if (TryDiscoverInstallation(candidate, out var installation))
 					yield return installation;
 			}
+
+            // Fallback: If no installation is found, provide a default one so it appears in the list
+            if (TryDiscoverInstallation(DefaultInstallPath(), out var defaultInstallation))
+            {
+                yield return defaultInstallation;
+            }
+            else
+            {
+                // Force return a default installation object even if file doesn't exist,
+                // so the user can see "Antigravity" in the list and browse manually.
+                yield return new AntigravityInstallation
+                {
+                    Name = "Antigravity",
+                    Path = DefaultInstallPath(),
+                    Version = new Version()
+                };
+            }
 		}
+
+        private static string DefaultInstallPath()
+        {
+#if UNITY_EDITOR_WIN
+            return "C:\\Program Files\\Antigravity\\antigravity.exe";
+#elif UNITY_EDITOR_OSX
+            return "/Applications/Antigravity.app";
+#else
+            return "/usr/bin/antigravity";
+#endif
+        }
 
 #if UNITY_EDITOR_LINUX
 		private static readonly Regex DesktopFileExecEntry = new Regex(@"Exec=(\S+)", RegexOptions.Singleline | RegexOptions.Compiled);
