@@ -26,13 +26,15 @@ namespace Antigravity.Editor
             {
                 var installations = new List<CodeEditor.Installation>();
 
-                if (_discoverInstallations != null && _discoverInstallations.Result != null)
+                // Use discovered installations if available
+                if (_discoverInstallations != null && _discoverInstallations.Result != null && _discoverInstallations.Result.Count > 0)
                 {
                     installations.AddRange(_discoverInstallations.Result.Values.Select(v => v.ToCodeEditorInstallation()));
                 }
-
-                if (installations.Count == 0)
+                else
                 {
+                    // Always provide Antigravity as a default option so it appears in the dropdown,
+                    // even if not installed. Users can then browse for the installation path.
                     installations.Add(new CodeEditor.Installation
                     {
                         Name = "Antigravity",
