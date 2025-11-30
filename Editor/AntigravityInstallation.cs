@@ -192,7 +192,7 @@ namespace Antigravity.Editor
             }
 		}
 
-        private static string DefaultInstallPath()
+        public static string DefaultInstallPath()
         {
 #if UNITY_EDITOR_WIN
             return "C:\\Program Files\\Antigravity\\antigravity.exe";

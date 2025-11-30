@@ -21,11 +21,29 @@ namespace Antigravity.Editor
 	[InitializeOnLoad]
 	public class AntigravityExternalEditor : IExternalCodeEditor
 	{
-		CodeEditor.Installation[] IExternalCodeEditor.Installations => _discoverInstallations
-			.Result
-			.Values
-			.Select(v => v.ToCodeEditorInstallation())
-			.ToArray();
+		CodeEditor.Installation[] IExternalCodeEditor.Installations
+        {
+            get
+            {
+                var installations = new List<CodeEditor.Installation>();
+
+                if (_discoverInstallations != null && _discoverInstallations.Result != null)
+                {
+                    installations.AddRange(_discoverInstallations.Result.Values.Select(v => v.ToCodeEditorInstallation()));
+                }
+
+                if (installations.Count == 0)
+                {
+                    installations.Add(new CodeEditor.Installation
+                    {
+                        Name = "Antigravity",
+                        Path = AntigravityInstallation.DefaultInstallPath()
+                    });
+                }
+
+                return installations.ToArray();
+            }
+        }
 
 		private static readonly AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>> _discoverInstallations;
 
