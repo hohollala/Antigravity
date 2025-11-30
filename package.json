@@ -1,0 +1,28 @@
+{
+  "name": "com.antigravity.editor",
+  "displayName": "Antigravity Editor",
+  "description": "Antigravity editor integration for supporting Antigravity as code editor for Unity. Adds support for generating csproj files for intellisense purposes, auto discovery of installations, etc.",
+  "version": "1.0.0",
+  "unity": "2019.4",
+  "unityRelease": "25f1",
+  "keywords": [
+    "antigravity",
+    "editor",
+    "external-editor",
+    "code-editor",
+    "ide"
+  ],
+  "author": {
+    "name": "Antigravity"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/com.antigravity.editor.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/com.antigravity.editor#readme",
+  "_upm": {
+    "changelog": "Integration:\n\n- Add Antigravity as external code editor for Unity\n- Auto-detection of Antigravity installation path\n- Support for Windows, macOS, and Linux\n- Integration with Unity Preferences UI"
+  }
+}
