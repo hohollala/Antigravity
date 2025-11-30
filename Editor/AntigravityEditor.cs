@@ -12,14 +12,13 @@ using UnityEditor;
 using UnityEngine;
 using Unity.CodeEditor;
 
-[assembly: InternalsVisibleTo("Unity.VisualStudio.EditorTests")]
-[assembly: InternalsVisibleTo("Unity.VisualStudio.Standalone.EditorTests")]
+[assembly: InternalsVisibleTo("Antigravity.EditorTests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Antigravity.Editor
 {
 	[InitializeOnLoad]
-	public class AntigravityExternalEditor : IExternalCodeEditor
+	internal class AntigravityExternalEditor : IExternalCodeEditor
 	{
 		CodeEditor.Installation[] IExternalCodeEditor.Installations
         {
@@ -99,7 +98,7 @@ namespace Antigravity.Editor
 
 		// this one seems legacy and not used anymore
 		// keeping it for now given it is public, so we need a major bump to remove it 
-		public void CreateIfDoesntExist()
+		internal void CreateIfDoesntExist()
 		{
 			if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation)) 
 				return;
