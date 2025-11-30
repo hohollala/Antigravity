@@ -59,8 +59,17 @@ public class AntigravityEditor : IExternalCodeEditor
             }
         }
 
-        // 저장된 경로 반환 (공백이어도 등록)
-        return EditorPrefs.GetString(EditorPathKey, "");
+        // 저장된 경로 반환
+        string saved = EditorPrefs.GetString(EditorPathKey, "");
+        if (!string.IsNullOrEmpty(saved))
+        {
+            return saved;
+        }
+
+        // 감지 실패 시에도 목록에 표시되도록 기본 경로 반환
+        if (IsWindows()) return "C:\\Program Files\\Antigravity\\antigravity.exe";
+        if (IsMac()) return "/Applications/Antigravity.app/Contents/MacOS/Antigravity"; // Mac 기본 경로 수정
+        return "/usr/bin/antigravity"; // Linux 기본 경로
     }
 
     /// <summary>
