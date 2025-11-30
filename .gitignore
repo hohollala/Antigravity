@@ -17,16 +17,7 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 
-# Meta files (root-level documentation files)
-CHANGELOG.md.meta
-CLAUDE.md.meta
-INSTALL.md.meta
-LICENSE.meta
-package.json.meta
-PROJECT_SUMMARY.md.meta
-QUICK_START.md.meta
-README.md.meta
-README_KO.md.meta
+# Meta files for root-level documentation are tracked
 
 # IDE
 .vscode
