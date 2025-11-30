@@ -168,27 +168,35 @@ namespace Antigravity.Editor
 			candidates.AddRange(GetXdgCandidates());
 #endif
 
+			var foundPaths = new HashSet<string>();
 			foreach (var candidate in candidates.Distinct())
 			{
 				if (TryDiscoverInstallation(candidate, out var installation))
+				{
+					foundPaths.Add(installation.Path);
 					yield return installation;
+				}
 			}
 
-            // Fallback: If no installation is found, provide a default one so it appears in the list
-            if (TryDiscoverInstallation(DefaultInstallPath(), out var defaultInstallation))
+            // Fallback: Provide default installation only if not already found
+            var defaultPath = DefaultInstallPath();
+            if (!foundPaths.Contains(defaultPath))
             {
-                yield return defaultInstallation;
-            }
-            else
-            {
-                // Force return a default installation object even if file doesn't exist,
-                // so the user can see "Antigravity" in the list and browse manually.
-                yield return new AntigravityInstallation
+                if (TryDiscoverInstallation(defaultPath, out var defaultInstallation))
                 {
-                    Name = "Antigravity",
-                    Path = DefaultInstallPath(),
-                    Version = new Version()
-                };
+                    yield return defaultInstallation;
+                }
+                else
+                {
+                    // Force return a default installation object even if file doesn't exist,
+                    // so the user can see "Antigravity" in the list and browse manually.
+                    yield return new AntigravityInstallation
+                    {
+                        Name = "Antigravity",
+                        Path = defaultPath,
+                        Version = new Version()
+                    };
+                }
             }
 		}
 
