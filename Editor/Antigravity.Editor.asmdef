@@ -1,5 +1,5 @@
 {
-    "name": "Unity.Antigravity.Editor",
+    "name": "Antigravity.Editor",
     "references": [],
     "includePlatforms": [
         "Editor"
