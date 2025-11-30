@@ -1,304 +1,311 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Unity Technologies.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using Unity.CodeEditor;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
+using Unity.CodeEditor;
 
-[InitializeOnLoad]
-public class AntigravityEditor : IExternalCodeEditor
+[assembly: InternalsVisibleTo("Unity.VisualStudio.EditorTests")]
+[assembly: InternalsVisibleTo("Unity.VisualStudio.Standalone.EditorTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+
+namespace Antigravity.Editor
 {
-    const string EditorName = "Antigravity";
-    const string EditorPathKey = "AntigravityEditorPath";
+	[InitializeOnLoad]
+	public class AntigravityExternalEditor : IExternalCodeEditor
+	{
+		CodeEditor.Installation[] IExternalCodeEditor.Installations => _discoverInstallations
+			.Result
+			.Values
+			.Select(v => v.ToCodeEditorInstallation())
+			.ToArray();
 
-    static AntigravityEditor()
-    {
-        CodeEditor.Register(new AntigravityEditor());
-    }
+		private static readonly AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>> _discoverInstallations;
 
-    public CodeEditor.Installation[] Installations => new[]
-    {
-        new CodeEditor.Installation
-        {
-            Name = EditorName,
-            Path = GetAntigravityPath()
-        }
-    };
+		static AntigravityExternalEditor()
+		{
+			if (!UnityInstallation.IsMainUnityEditorProcess)
+				return;
 
-    /// <summary>
-    /// Antigravity 실행 파일의 경로를 자동으로 감지하거나 반환합니다.
-    /// 1. EditorPrefs에 저장된 경로 확인
-    /// 2. 시스템 PATH에서 자동 감지
-    /// 3. 공통 설치 경로 확인
-    /// </summary>
-    private static string GetAntigravityPath()
-    {
-        // 1. 이전에 저장된 경로 확인
-        string savedPath = EditorPrefs.GetString(EditorPathKey, "");
-        if (!string.IsNullOrEmpty(savedPath))
-        {
-            return savedPath;
-        }
+			Discovery.Initialize();
+			CodeEditor.Register(new AntigravityExternalEditor());
 
-        // 2. 시스템 PATH에서 자동 감지
-        string detectedPath = DetectAntigravityInPath();
-        if (!string.IsNullOrEmpty(detectedPath))
-        {
-            EditorPrefs.SetString(EditorPathKey, detectedPath);
-            return detectedPath;
-        }
+			_discoverInstallations = AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>>.Run(DiscoverInstallations);
+		}
 
-        // 3. 공통 설치 경로 확인
-        string[] commonPaths = GetCommonInstallPaths();
-        foreach (string path in commonPaths)
-        {
-            if (File.Exists(path))
-            {
-                EditorPrefs.SetString(EditorPathKey, path);
-                return path;
-            }
-        }
+#if UNITY_2019_4_OR_NEWER && !UNITY_2020
+		[InitializeOnLoadMethod]
+		static void LegacyVisualStudioCodePackageDisabler()
+		{
+			// disable legacy Visual Studio Code packages
+			var editor = CodeEditor.Editor.GetCodeEditorForPath("code.cmd");
+			if (editor == null)
+				return;
 
-        // 저장된 경로 반환
-        string saved = EditorPrefs.GetString(EditorPathKey, "");
-        if (!string.IsNullOrEmpty(saved))
-        {
-            return saved;
-        }
+			if (editor is AntigravityExternalEditor)
+				return;
 
-        // 감지 실패 시에도 목록에 표시되도록 기본 경로 반환
-        if (IsWindows()) return "C:\\Program Files\\Antigravity\\antigravity.exe";
-        if (IsMac()) return "/Applications/Antigravity.app/Contents/MacOS/Antigravity"; // Mac 기본 경로 수정
-        return "/usr/bin/antigravity"; // Linux 기본 경로
-    }
+			// only disable the com.unity.ide.vscode package
+			var assembly = editor.GetType().Assembly;
+			var assemblyName = assembly.GetName().Name;
+			if (assemblyName != "Unity.VSCode.Editor")
+				return;
 
-    /// <summary>
-    /// 시스템 PATH에서 Antigravity를 자동으로 감지합니다.
-    /// </summary>
-    private static string DetectAntigravityInPath()
-    {
-        try
-        {
-            string command = IsWindows() ? "where" : "which";
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = command,
-                    Arguments = "antigravity",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                }
-            };
+			CodeEditor.Unregister(editor);
+		}
+#endif
 
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit();
+		private static Dictionary<string, IAntigravityBaseInstallation> DiscoverInstallations()
+		{
+			try
+			{
+				return Discovery
+					.GetAntigravityBaseInstallations()
+					.ToDictionary(i => Path.GetFullPath(i.Path), i => i);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"Error detecting Visual Studio installations: {ex}");
+				return new Dictionary<string, IAntigravityBaseInstallation>();
+			}
+		}
 
-            if (!string.IsNullOrEmpty(output))
-            {
-                string firstLine = output.Split('\n')[0].Trim();
-                if (File.Exists(firstLine))
-                {
-                    return firstLine;
-                }
-            }
-        }
-        catch { }
+		internal static bool IsEnabled => CodeEditor.CurrentEditor is AntigravityExternalEditor && UnityInstallation.IsMainUnityEditorProcess;
 
-        return null;
-    }
+		// this one seems legacy and not used anymore
+		// keeping it for now given it is public, so we need a major bump to remove it 
+		public void CreateIfDoesntExist()
+		{
+			if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation)) 
+				return;
 
-    /// <summary>
-    /// 운영체제별 공통 Antigravity 설치 경로를 반환합니다.
-    /// </summary>
-    private static string[] GetCommonInstallPaths()
-    {
-        if (IsWindows())
-        {
-            return new[]
-            {
-                "C:\\Program Files\\Antigravity\\antigravity.exe",
-                "C:\\Program Files (x86)\\Antigravity\\antigravity.exe",
-                Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "AppData\\Local\\Programs\\Antigravity\\antigravity.exe"),
-                Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "scoop\\apps\\antigravity\\current\\antigravity.exe"),
-                Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "scoop\\shims\\antigravity.exe"),
-            };
-        }
-        else if (IsMac())
-        {
-            return new[]
-            {
-                "/usr/local/bin/antigravity",
-                "/opt/homebrew/bin/antigravity",
-                "/usr/bin/antigravity",
-                Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".cargo/bin/antigravity"),
-            };
-        }
-        else // Linux
-        {
-            return new[]
-            {
-                "/usr/local/bin/antigravity",
-                "/usr/bin/antigravity",
-                Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".cargo/bin/antigravity"),
-                Path.Combine(System.Environment.GetEnvironmentVariable("HOME"), ".local/bin/antigravity"),
-            };
-        }
-    }
+			var generator = installation.ProjectGenerator;
+			if (!generator.HasSolutionBeenGenerated())
+				generator.Sync();
+		}
 
-    private static bool IsWindows() => Application.platform == RuntimePlatform.WindowsEditor;
-    private static bool IsMac() => Application.platform == RuntimePlatform.OSXEditor;
+		public void Initialize(string editorInstallationPath)
+		{
+		}
 
-    public void Initialize(string editorInstallationPath)
-    {
-        // 사용자가 선택한 경로 저장
-        if (!string.IsNullOrEmpty(editorInstallationPath))
-        {
-            EditorPrefs.SetString(EditorPathKey, editorInstallationPath);
-            Debug.Log($"Antigravity Editor path saved: {editorInstallationPath}");
-        }
-    }
+		internal virtual bool TryGetAntigravityBaseInstallationForPath(string editorPath, bool lookupDiscoveredInstallations, out IAntigravityBaseInstallation installation)
+		{
+			editorPath = Path.GetFullPath(editorPath);
 
-    public void OnGUI()
-    {
-        // Preferences > External Tools의 UI 섹션
-        EditorGUILayout.LabelField("Antigravity Editor Settings", EditorStyles.boldLabel);
-        EditorGUILayout.Space();
+			// lookup for well known installations
+			if (lookupDiscoveredInstallations && _discoverInstallations.Result.TryGetValue(editorPath, out installation))
+				return true;
 
-        string currentPath = EditorPrefs.GetString(EditorPathKey, "");
+			return Discovery.TryDiscoverInstallation(editorPath, out installation);
+		}
 
-        // 경로 표시
-        EditorGUILayout.LabelField("Executable Path", EditorStyles.label);
-        EditorGUILayout.SelectableLabel(currentPath, EditorStyles.textField, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+		public virtual bool TryGetInstallationForPath(string editorPath, out CodeEditor.Installation installation)
+		{
+			var result = TryGetAntigravityBaseInstallationForPath(editorPath, lookupDiscoveredInstallations: false, out var vsi);
+			installation = vsi?.ToCodeEditorInstallation() ?? default;
+			return result;
+		}
 
-        EditorGUILayout.Space();
+		public void OnGUI()
+		{
+			GUILayout.BeginHorizontal();
+			GUILayout.FlexibleSpace();
 
-        // 경로 변경 버튼
-        if (GUILayout.Button("Browse for Antigravity Executable", GUILayout.Width(250)))
-        {
-            string browseStartPath = string.IsNullOrEmpty(currentPath) ? System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles) : Path.GetDirectoryName(currentPath);
-            string filter = IsWindows() ? "exe" : "";
-            string newPath = EditorUtility.OpenFilePanel("Select Antigravity Executable", browseStartPath, filter);
+			if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+				return;
 
-            if (!string.IsNullOrEmpty(newPath))
-            {
-                EditorPrefs.SetString(EditorPathKey, newPath);
-                Debug.Log($"Antigravity Editor path updated: {newPath}");
-            }
-        }
+			var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(GetType().Assembly);
 
-        EditorGUILayout.Space();
+			var style = new GUIStyle
+			{
+				richText = true,
+				margin = new RectOffset(0, 4, 0, 0)
+			};
 
-        // 자동 감지 버튼
-        if (GUILayout.Button("Auto-detect Antigravity Path", GUILayout.Width(250)))
-        {
-            string detectedPath = DetectAntigravityInPath();
-            if (!string.IsNullOrEmpty(detectedPath))
-            {
-                EditorPrefs.SetString(EditorPathKey, detectedPath);
-                Debug.Log($"Antigravity Editor auto-detected at: {detectedPath}");
-            }
-            else
-            {
-                EditorUtility.DisplayDialog("Auto-detection Failed", "Could not automatically find Antigravity. Please browse manually.", "OK");
-            }
-        }
+			GUILayout.Label($"<size=10><color=grey>{package.displayName} v{package.version} enabled</color></size>", style);
+			GUILayout.EndHorizontal();
 
-        EditorGUILayout.Space();
-        EditorGUILayout.HelpBox("The path to the Antigravity executable. Leave empty to auto-detect.", MessageType.Info);
-    }
+			if (installation is AntigravityInstallation)
+			{
+				var reuseWindow = EditorPrefs.GetBool(AntigravityInstallation.ReuseExistingWindowKey, false);
+				var newReuseWindow = EditorGUILayout.Toggle(new GUIContent("Reuse existing Antigravity window", "When enabled, opens files in an existing Antigravity window if found. When disabled, always opens a new window."), reuseWindow);
+				if (newReuseWindow != reuseWindow)
+					EditorPrefs.SetBool(AntigravityInstallation.ReuseExistingWindowKey, newReuseWindow);
+				
+				EditorGUILayout.Space();
+			}
 
-    public bool OpenProject(string filePath, int line, int column)
-    {
-        // 파일을 Antigravity에서 열기
-        string arguments = ParseArguments(filePath, line, column);
-        return OpenApp(arguments);
-    }
+			EditorGUILayout.LabelField("Generate .csproj files for:");
+			EditorGUI.indentLevel++;
+			SettingsButton(ProjectGenerationFlag.Embedded, "Embedded packages", "", installation);
+			SettingsButton(ProjectGenerationFlag.Local, "Local packages", "", installation);
+			SettingsButton(ProjectGenerationFlag.Registry, "Registry packages", "", installation);
+			SettingsButton(ProjectGenerationFlag.Git, "Git packages", "", installation);
+			SettingsButton(ProjectGenerationFlag.BuiltIn, "Built-in packages", "", installation);
+			SettingsButton(ProjectGenerationFlag.LocalTarBall, "Local tarball", "", installation);
+			SettingsButton(ProjectGenerationFlag.Unknown, "Packages from unknown sources", "", installation);
+			SettingsButton(ProjectGenerationFlag.PlayerAssemblies, "Player projects", "For each player project generate an additional csproj with the name 'project-player.csproj'", installation);
+			RegenerateProjectFiles(installation);
+			EditorGUI.indentLevel--;
+		}
 
-    public void SyncAll()
-    {
-        // 필요시 프로젝트 파일 동기화 (예: .csproj 생성)
-    }
+		private static void RegenerateProjectFiles(IAntigravityBaseInstallation installation)
+		{
+			var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+			rect.width = 252;
+			if (GUI.Button(rect, "Regenerate project files"))
+			{
+				installation.ProjectGenerator.Sync();
+			}
+		}
 
-    public void SyncIfNeeded(string[] added, string[] deleted, string[] moved, string[] movedFrom, string[] imported)
-    {
-        // 파일 변경 처리
-    }
+		private static void SettingsButton(ProjectGenerationFlag preference, string guiMessage, string toolTip, IAntigravityBaseInstallation installation)
+		{
+			var generator = installation.ProjectGenerator;
+			var prevValue = generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(preference);
 
-    public bool TryGetInstallationForPath(string editorPath, out CodeEditor.Installation installation)
-    {
-        if (!string.IsNullOrEmpty(editorPath) && editorPath.ToLower().Contains("antigravity"))
-        {
-            installation = new CodeEditor.Installation
-            {
-                Name = EditorName,
-                Path = editorPath
-            };
-            return true;
-        }
+			var newValue = EditorGUILayout.Toggle(new GUIContent(guiMessage, toolTip), prevValue);
+			if (newValue != prevValue)
+				generator.AssemblyNameProvider.ToggleProjectGeneration(preference);
+		}
 
-        installation = default;
-        return false;
-    }
+		public void SyncIfNeeded(string[] addedFiles, string[] deletedFiles, string[] movedFiles, string[] movedFromFiles, string[] importedFiles)
+		{
+			if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+			{
+				installation.ProjectGenerator.SyncIfNeeded(addedFiles.Union(deletedFiles).Union(movedFiles).Union(movedFromFiles), importedFiles);
+			}
 
-    /// <summary>
-    /// Antigravity CLI의 인자 형식을 생성합니다.
-    /// 형식: "file_path":line:column
-    /// 필요시 이 메서드를 수정하여 다른 형식을 지원할 수 있습니다.
-    /// </summary>
-    private string ParseArguments(string filePath, int line, int column)
-    {
-        // Antigravity 기본 형식: "file.cs":10:5
-        return $"\"{filePath}\":{line}:{column}";
+			foreach (var file in importedFiles.Where(a => Path.GetExtension(a) == ".pdb"))
+			{
+				var pdbFile = FileUtility.GetAssetFullPath(file);
 
-        // 다른 형식 예시들:
-        // return $"open \"{filePath}\" --line {line} --column {column}";
-        // return $"--open \"{filePath}\" --goto {line}:{column}";
-    }
+				// skip Unity packages like com.unity.ext.nunit
+				if (pdbFile.IndexOf($"{Path.DirectorySeparatorChar}com.unity.", StringComparison.OrdinalIgnoreCase) > 0)
+					continue;
 
-    /// <summary>
-    /// Antigravity 프로세스를 시작합니다.
-    /// </summary>
-    private bool OpenApp(string arguments)
-    {
-        string appPath = EditorPrefs.GetString(EditorPathKey);
+				var asmFile = Path.ChangeExtension(pdbFile, ".dll");
+				if (!File.Exists(asmFile) || !Image.IsAssembly(asmFile))
+					continue;
 
-        if (string.IsNullOrEmpty(appPath))
-        {
-            Debug.LogError("Antigravity executable path not set. Please configure it in Preferences > External Tools > Antigravity Editor Settings");
-            return false;
-        }
+				if (Symbols.IsPortableSymbolFile(pdbFile))
+					continue;
 
-        if (!File.Exists(appPath))
-        {
-            Debug.LogError($"Antigravity executable not found at: {appPath}");
-            return false;
-        }
+				Debug.LogWarning($"Unity is only able to load mdb or portable-pdb symbols. {file} is using a legacy pdb format.");
+			}
+		}
 
-        try
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = appPath,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
+		public void SyncAll()
+		{
+			if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+			{
+				installation.ProjectGenerator.Sync();
+			}
+		}
 
-            process.Start();
-            return true;
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Failed to launch Antigravity: {e.Message}");
-            return false;
-        }
-    }
+		private static bool IsSupportedPath(string path, IGenerator generator)
+		{
+			// Path is empty with "Open C# Project", as we only want to open the solution without specific files
+			if (string.IsNullOrEmpty(path))
+				return true;
+
+			// cs, uxml, uss, shader, compute, cginc, hlsl, glslinc, template are part of Unity builtin extensions
+			// txt, xml, fnt, cd are -often- par of Unity user extensions
+			// asdmdef is mandatory included
+			return generator.IsSupportedFile(path);
+		}
+
+		public bool OpenProject(string path, int line, int column)
+		{
+			var editorPath = CodeEditor.CurrentEditorInstallation;
+
+			if (!Discovery.TryDiscoverInstallation(editorPath, out var installation)) {
+				Debug.LogWarning($"Visual Studio executable {editorPath} is not found. Please change your settings in Edit > Preferences > External Tools.");
+				return false;
+			}
+
+			var generator = installation.ProjectGenerator;
+			if (!IsSupportedPath(path, generator))
+				return false;
+
+			if (!IsProjectGeneratedFor(path, generator, out var missingFlag))
+				Debug.LogWarning($"You are trying to open {path} outside a generated project. This might cause problems with IntelliSense and debugging. To avoid this, you can change your .csproj preferences in Edit > Preferences > External Tools and enable {GetProjectGenerationFlagDescription(missingFlag)} generation.");
+
+			var solution = GetOrGenerateSolutionFile(generator);
+			return installation.Open(path, line, column, solution);
+		}
+
+		private static string GetProjectGenerationFlagDescription(ProjectGenerationFlag flag)
+		{
+			switch (flag)
+			{
+				case ProjectGenerationFlag.BuiltIn:
+					return "Built-in packages";
+				case ProjectGenerationFlag.Embedded:
+					return "Embedded packages";
+				case ProjectGenerationFlag.Git:
+					return "Git packages";
+				case ProjectGenerationFlag.Local:
+					return "Local packages";
+				case ProjectGenerationFlag.LocalTarBall:
+					return "Local tarball";
+				case ProjectGenerationFlag.PlayerAssemblies:
+					return "Player projects";
+				case ProjectGenerationFlag.Registry:
+					return "Registry packages";
+				case ProjectGenerationFlag.Unknown:
+					return "Packages from unknown sources";
+				default:
+					return string.Empty;
+			}
+		}
+
+		private static bool IsProjectGeneratedFor(string path, IGenerator generator, out ProjectGenerationFlag missingFlag)
+		{
+			missingFlag = ProjectGenerationFlag.None;
+
+			// No need to check when opening the whole solution
+			if (string.IsNullOrEmpty(path))
+				return true;
+
+			// We only want to check for cs scripts
+			if (ProjectGeneration.ScriptingLanguageForFile(path) != ScriptingLanguage.CSharp)
+				return true;
+
+			// Even on windows, the package manager requires relative path + unix style separators for queries
+			var basePath = generator.ProjectDirectory;
+			var relativePath = path
+				.NormalizeWindowsToUnix()
+				.Replace(basePath, string.Empty)
+				.Trim(FileUtility.UnixSeparator);
+
+			var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(relativePath);
+			if (packageInfo == null)
+				return true;
+
+			var source = packageInfo.source;
+			if (!Enum.TryParse<ProjectGenerationFlag>(source.ToString(), out var flag))
+				return true;
+
+			if (generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(flag))
+				return true;
+
+			// Return false if we found a source not flagged for generation
+			missingFlag = flag;
+			return false;
+		}
+
+		private static string GetOrGenerateSolutionFile(IGenerator generator)
+		{
+			generator.Sync();
+			return generator.SolutionFile();
+		}
+	}
 }
