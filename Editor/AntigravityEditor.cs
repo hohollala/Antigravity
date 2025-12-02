@@ -20,6 +20,51 @@ namespace Antigravity.Editor
 	[InitializeOnLoad]
 	internal class AntigravityExternalEditor : IExternalCodeEditor
 	{
+		[MenuItem("Antigravity/Settings")]
+		private static void OpenAntigravitySettings()
+		{
+			CreateVscodeLaunchConfiguration();
+		}
+
+		private static void CreateVscodeLaunchConfiguration()
+		{
+			try
+			{
+				// 프로젝트 루트 경로 가져오기
+				string projectRoot = Path.GetDirectoryName(Application.dataPath);
+				string vscodeDir = Path.Combine(projectRoot, ".vscode");
+				string launchJsonPath = Path.Combine(vscodeDir, "launch.json");
+
+				// .vscode 폴더 생성 (없으면)
+				if (!Directory.Exists(vscodeDir))
+				{
+					Directory.CreateDirectory(vscodeDir);
+				}
+
+				// launch.json 콘텐츠
+				string launchJsonContent = @"{
+    ""version"": ""0.2.0"",
+    ""configurations"": [
+        {
+            ""name"": ""Attach to Unity"",
+            ""type"": ""vstuc"",
+            ""request"": ""attach""
+        }
+    ]
+}";
+
+				// 파일 생성 또는 덮어쓰기
+				File.WriteAllText(launchJsonPath, launchJsonContent);
+
+				Debug.Log($"Antigravity launch.json created successfully at: {launchJsonPath}");
+				EditorUtility.DisplayDialog("Success", $".vscode/launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"Failed to create launch.json: {ex.Message}");
+				EditorUtility.DisplayDialog("Error", $"launch.json 생성 실패:\n{ex.Message}", "OK");
+			}
+		}
 		CodeEditor.Installation[] IExternalCodeEditor.Installations
         {
             get
