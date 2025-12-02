@@ -2,7 +2,7 @@
   "name": "com.antigravity.editor",
   "displayName": "Antigravity Editor",
   "description": "Antigravity editor integration for supporting Antigravity as code editor for Unity. Adds support for generating csproj files for intellisense purposes, auto discovery of installations, etc.",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "unity": "2019.4",
   "unityRelease": "25f1",
   "keywords": [
@@ -25,6 +25,6 @@
   "license": "MIT",
   "homepage": "https://github.com/hohollala/Antigravity#readme",
   "_upm": {
-    "changelog": "1.1.10:\n- Fix: Changed launch.json debugger type from 'vstuc' to 'unity' for proper Antigravity debugging support\n\n1.1.9:\n- Add: Created missing AntigravityBaseInstallation interface and base class\n- Add: Created missing VisualStudioCodiumInstallation class for Codium support\n- Fix: Resolved all CS0246 compilation errors for missing type references\n\n1.1.8:\n- Fix: Regenerated all 59 .meta files with unique GUIDs to resolve conflicts with Cursor IDE package\n- Fix: Antigravity now loads correctly and appears in External Script Editor dropdown\n\n1.1.7:\n- Fix: GUID 충돌 해결 (Cursor IDE와의 중복 GUID)\n- Fix: Assembly definition이 올바르게 로드되도록 수정\n\n1.1.6:\n- Fix: Ensure Antigravity always appears in External Script Editor dropdown even if not installed\n- Improvement: Users can now manually browse for Antigravity installation path\n\n1.1.5:\n- Fix: Assembly definition name corrected for Unity Package Manager compatibility\n\n1.1.4:\n- Fix: Corrected InternalsVisibleTo assembly references\n- Fix: Changed AntigravityExternalEditor class from public to internal for proper initialization\n- Fix: Fixed metadata references to match Antigravity namespace\n\n1.1.0:\n- Major Refactor: Ported from com.unity.ide.cursor structure\n- Added .csproj generation support\n- Improved process management\n- Added reuse window option"
+    "changelog": "1.1.11:\n- Add: Antigravity Settings 메뉴 추가\n- Add: 클릭 시 .vscode/launch.json 자동 생성\n- Add: Antigravity 디버거 설정 (vstuc 타입) 포함\n\n1.1.10:\n- Fix: Changed launch.json debugger type from 'vstuc' to 'unity' for proper Antigravity debugging support\n\n1.1.9:\n- Add: Created missing AntigravityBaseInstallation interface and base class\n- Add: Created missing VisualStudioCodiumInstallation class for Codium support\n- Fix: Resolved all CS0246 compilation errors for missing type references\n\n1.1.8:\n- Fix: Regenerated all 59 .meta files with unique GUIDs to resolve conflicts with Cursor IDE package\n- Fix: Antigravity now loads correctly and appears in External Script Editor dropdown\n\n1.1.7:\n- Fix: GUID 충돌 해결 (Cursor IDE와의 중복 GUID)\n- Fix: Assembly definition이 올바르게 로드되도록 수정\n\n1.1.6:\n- Fix: Ensure Antigravity always appears in External Script Editor dropdown even if not installed\n- Improvement: Users can now manually browse for Antigravity installation path\n\n1.1.5:\n- Fix: Assembly definition name corrected for Unity Package Manager compatibility\n\n1.1.4:\n- Fix: Corrected InternalsVisibleTo assembly references\n- Fix: Changed AntigravityExternalEditor class from public to internal for proper initialization\n- Fix: Fixed metadata references to match Antigravity namespace\n\n1.1.0:\n- Major Refactor: Ported from com.unity.ide.cursor structure\n- Added .csproj generation support\n- Improved process management\n- Added reuse window option"
   }
 }
