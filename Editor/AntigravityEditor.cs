@@ -133,6 +133,7 @@ namespace Antigravity.Editor
 			{
 				return Discovery
 					.GetAntigravityBaseInstallations()
+					.DistinctBy(i => Path.GetFullPath(i.Path))
 					.ToDictionary(i => Path.GetFullPath(i.Path), i => i);
 			}
 			catch (Exception ex)
