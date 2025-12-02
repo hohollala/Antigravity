@@ -131,10 +131,16 @@ namespace Antigravity.Editor
 		{
 			try
 			{
-				return Discovery
-					.GetAntigravityBaseInstallations()
-					.DistinctBy(i => Path.GetFullPath(i.Path))
-					.ToDictionary(i => Path.GetFullPath(i.Path), i => i);
+				var dict = new Dictionary<string, IAntigravityBaseInstallation>();
+				foreach (var installation in Discovery.GetAntigravityBaseInstallations())
+				{
+					var fullPath = Path.GetFullPath(installation.Path);
+					if (!dict.ContainsKey(fullPath))
+					{
+						dict[fullPath] = installation;
+					}
+				}
+				return dict;
 			}
 			catch (Exception ex)
 			{
