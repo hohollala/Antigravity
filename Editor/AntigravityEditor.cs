@@ -65,6 +65,7 @@ namespace Antigravity.Editor
 				EditorUtility.DisplayDialog("Error", $"launch.json 생성 실패:\n{ex.Message}", "OK");
 			}
 		}
+
 		CodeEditor.Installation[] IExternalCodeEditor.Installations
         {
             get
