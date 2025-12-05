@@ -46,9 +46,10 @@ namespace Antigravity.Editor
     ""version"": ""0.2.0"",
     ""configurations"": [
         {
-            ""name"": ""Attach to Unity"",
-            ""type"": ""vstuc"",
-            ""request"": ""attach""
+            ""name"": ""Unity Editor"",
+            ""type"": ""unity"",
+            ""request"": ""launch",
+            "program": "${workspaceFolder}/Library/UnityEditor.exe""
         }
     ]
 }";
