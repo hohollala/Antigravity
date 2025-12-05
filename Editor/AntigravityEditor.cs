@@ -48,7 +48,7 @@ namespace Antigravity.Editor
 				#elif UNITY_EDITOR_OSX
 				// macOS의 경우 Unity 버전을 가져와서 경로 생성
 				string unityVersion = Application.unityVersion;
-				unityEditorPath = $"/Applications/Unity/Hub/Editor/{unityVersion}/Unity.app/Contents/MacOS/Unity";
+				unityEditorPath = $"/Applications/Unity/Hub/Editor/{unityVersion}/Unity.app";
 				#elif UNITY_EDITOR_LINUX
 				unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
 				#else
