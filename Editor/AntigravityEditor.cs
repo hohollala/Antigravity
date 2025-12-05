@@ -41,15 +41,27 @@ namespace Antigravity.Editor
 					Directory.CreateDirectory(vscodeDir);
 				}
 
+				// 플랫폼별 Unity Editor 경로 설정
+				string unityEditorPath;
+				#if UNITY_EDITOR_WIN
+				unityEditorPath = "${workspaceFolder}/Library/UnityEditor.exe";
+				#elif UNITY_EDITOR_OSX
+				unityEditorPath = "/Applications/Unity/Hub/Editor/${editorVersion}/Unity.app/Contents/MacOS/Unity";
+				#elif UNITY_EDITOR_LINUX
+				unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
+				#else
+				unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
+				#endif
+
 				// launch.json 콘텐츠
-				string launchJsonContent = @"{
+				string launchJsonContent = $@"{
     ""version"": ""0.2.0"",
     ""configurations"": [
         {
             ""name"": ""Unity Editor"",
             ""type"": ""unity"",
             ""request"": ""launch"",
-            ""program"": ""${workspaceFolder}/Library/UnityEditor.exe""
+            ""program"": ""{unityEditorPath}""
         }
     ]
 }";
