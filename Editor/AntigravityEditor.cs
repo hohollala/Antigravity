@@ -54,7 +54,7 @@ namespace Antigravity.Editor
 				#endif
 
 				// launch.json 콘텐츠
-				string launchJsonContent = $@"{
+				string launchJsonContent = @$"{
     ""version"": ""0.2.0"",
     ""configurations"": [
         {
