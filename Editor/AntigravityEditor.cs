@@ -17,46 +17,46 @@ using Unity.CodeEditor;
 
 namespace Antigravity.Editor
 {
-	[InitializeOnLoad]
-	internal class AntigravityExternalEditor : IExternalCodeEditor
-	{
-		[MenuItem("Antigravity/Settings")]
-		private static void OpenAntigravitySettings()
-		{
-			CreateVscodeLaunchConfiguration();
-		}
+    [InitializeOnLoad]
+    internal class AntigravityExternalEditor : IExternalCodeEditor
+    {
+        [MenuItem("Antigravity/launch.json")]
+        private static void OpenAntigravitySettings()
+        {
+            CreateVscodeLaunchConfiguration();
+        }
 
-		private static void CreateVscodeLaunchConfiguration()
-		{
-			try
-			{
-				// 프로젝트 루트 경로 가져오기
-				string projectRoot = Path.GetDirectoryName(Application.dataPath);
-				string vscodeDir = Path.Combine(projectRoot, ".vscode");
-				string launchJsonPath = Path.Combine(vscodeDir, "launch.json");
+        private static void CreateVscodeLaunchConfiguration()
+        {
+            try
+            {
+                // 프로젝트 루트 경로 가져오기
+                string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                string vscodeDir = Path.Combine(projectRoot, ".vscode");
+                string launchJsonPath = Path.Combine(vscodeDir, "launch.json");
 
-				// .vscode 폴더 생성 (없으면)
-				if (!Directory.Exists(vscodeDir))
-				{
-					Directory.CreateDirectory(vscodeDir);
-				}
+                // .vscode 폴더 생성 (없으면)
+                if (!Directory.Exists(vscodeDir))
+                {
+                    Directory.CreateDirectory(vscodeDir);
+                }
 
-				// 플랫폼별 Unity Editor 경로 설정
-				string unityEditorPath;
-				#if UNITY_EDITOR_WIN
+                // 플랫폼별 Unity Editor 경로 설정
+                string unityEditorPath;
+#if UNITY_EDITOR_WIN
 				unityEditorPath = "${workspaceFolder}/Library/UnityEditor.exe";
-				#elif UNITY_EDITOR_OSX
+#elif UNITY_EDITOR_OSX
 				// macOS의 경우 Unity 버전을 가져와서 경로 생성
 				string unityVersion = Application.unityVersion;
 				unityEditorPath = $"/Applications/Unity/Hub/Editor/{unityVersion}/Unity.app";
-				#elif UNITY_EDITOR_LINUX
+#elif UNITY_EDITOR_LINUX
 				unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
-				#else
-				unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
-				#endif
+#else
+                unityEditorPath = "${workspaceFolder}/Library/UnityEditor";
+#endif
 
-				// launch.json 콘텐츠
-				string launchJsonContent = @$"{{
+                // launch.json 콘텐츠
+                string launchJsonContent = @$"{{
     ""version"": ""0.2.0"",
     ""configurations"": [
         {{
@@ -68,20 +68,146 @@ namespace Antigravity.Editor
     ]
 }}";
 
-				// 파일 생성 또는 덮어쓰기
-				File.WriteAllText(launchJsonPath, launchJsonContent);
+                // 파일 생성 또는 덮어쓰기
+                File.WriteAllText(launchJsonPath, launchJsonContent);
 
-				Debug.Log($"Antigravity launch.json created successfully at: {launchJsonPath}");
-				EditorUtility.DisplayDialog("Success", $".vscode/launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
-			}
-			catch (Exception ex)
-			{
-				Debug.LogError($"Failed to create launch.json: {ex.Message}");
-				EditorUtility.DisplayDialog("Error", $"launch.json 생성 실패:\n{ex.Message}", "OK");
-			}
-		}
+                Debug.Log($"Antigravity launch.json created successfully at: {launchJsonPath}");
+                EditorUtility.DisplayDialog("Success", $".vscode/launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to create launch.json: {ex.Message}");
+                EditorUtility.DisplayDialog("Error", $"launch.json 생성 실패:\n{ex.Message}", "OK");
+            }
+        }
 
-		CodeEditor.Installation[] IExternalCodeEditor.Installations
+        [MenuItem("Antigravity/settings.json")]
+        private static void OpenAntigravitySettingsJson()
+        {
+            CreateVscodeSettingsConfiguration();
+        }
+
+        private static void CreateVscodeSettingsConfiguration()
+        {
+            try
+            {
+                string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                string vscodeDir = Path.Combine(projectRoot, ".vscode");
+                string settingsJsonPath = Path.Combine(vscodeDir, "settings.json");
+
+                if (!Directory.Exists(vscodeDir))
+                {
+                    Directory.CreateDirectory(vscodeDir);
+                }
+
+                string solutionName = Path.GetFileName(projectRoot) + ".sln";
+                var slnFiles = Directory.GetFiles(projectRoot, "*.sln");
+                if (slnFiles.Length > 0)
+                {
+                    solutionName = Path.GetFileName(slnFiles[0]);
+                }
+
+                string settingsJsonContent = $@"{{
+    ""dotnet.preferCSharpExtension"": true,
+    ""files.exclude"": {{
+        ""**/.DS_Store"": true,
+        ""**/.git"": true,
+        ""**/.vs"": true,
+        ""**/.gitmodules"": true,
+        ""**/.vsconfig"": true,
+        ""**/*.booproj"": true,
+        ""**/*.pidb"": true,
+        ""**/*.suo"": true,
+        ""**/*.user"": true,
+        ""**/*.userprefs"": true,
+        ""**/*.unityproj"": true,
+        ""**/*.dll"": true,
+        ""**/*.exe"": true,
+        ""**/*.pdf"": true,
+        ""**/*.mid"": true,
+        ""**/*.midi"": true,
+        ""**/*.wav"": true,
+        ""**/*.gif"": true,
+        ""**/*.ico"": true,
+        ""**/*.jpg"": true,
+        ""**/*.jpeg"": true,
+        ""**/*.png"": true,
+        ""**/*.psd"": true,
+        ""**/*.tga"": true,
+        ""**/*.tif"": true,
+        ""**/*.tiff"": true,
+        ""**/*.3ds"": true,
+        ""**/*.3DS"": true,
+        ""**/*.fbx"": true,
+        ""**/*.FBX"": true,
+        ""**/*.lxo"": true,
+        ""**/*.LXO"": true,
+        ""**/*.ma"": true,
+        ""**/*.MA"": true,
+        ""**/*.obj"": true,
+        ""**/*.OBJ"": true,
+        ""**/*.asset"": true,
+        ""**/*.cubemap"": true,
+        ""**/*.flare"": true,
+        ""**/*.mat"": true,
+        ""**/*.meta"": true,
+        ""**/*.prefab"": true,
+        ""**/*.unity"": true,
+        ""build/"": true,
+        ""Build/"": true,
+        ""Library/"": true,
+        ""library/"": true,
+        ""obj/"": true,
+        ""Obj/"": true,
+        ""Logs/"": true,
+        ""logs/"": true,
+        ""ProjectSettings/"": true,
+        ""UserSettings/"": true,
+        ""temp/"": true,
+        ""Temp/"": true,
+        ""**/*.log"": true,
+        ""**/*.unitypackage"": true,
+        ""**/*.txt"": true,
+        ""**/*.asmdef"": true,
+        ""**/*.tmp"": true,
+        ""node_modules"": true,
+        ""dist"": true,
+        ""*.meta"": true,
+        ""secret_file.txt"": true,
+        ""Build"": true,
+        ""Library"": true,
+        ""*.gitignore"": true,
+        ""*.vsconfig"": true,
+        ""*.user"": true,
+        ""*.editorconfig"": true,
+        ""ProjectSettings"": true,
+        ""Temp"": true,
+        ""UserSettings"": true,
+        ""Logs"": true,
+        ""obj"": true,
+        ""Packages"": true,
+        "".vs"": true,
+        "".idea"": true,
+        ""*.claude"": true,
+        ""*.md"": true,
+        ""*.csproj"": true,
+        ""*.sln"": true
+    }},
+    ""dotnet.defaultSolution"": ""{solutionName}"",
+    ""terminal.integrated.allowChords"": true
+}}";
+
+                File.WriteAllText(settingsJsonPath, settingsJsonContent);
+                Debug.Log($"Antigravity settings.json created successfully at: {settingsJsonPath}");
+                EditorUtility.DisplayDialog("Success", $".vscode/settings.json 파일이 생성되었습니다.\n\n경로: {settingsJsonPath}", "OK");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to create settings.json: {ex.Message}");
+                EditorUtility.DisplayDialog("Error", $"settings.json 생성 실패:\n{ex.Message}", "OK");
+            }
+        }
+        CodeEditor.Installation[] IExternalCodeEditor.Installations
         {
             get
             {
@@ -107,18 +233,18 @@ namespace Antigravity.Editor
             }
         }
 
-		private static readonly AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>> _discoverInstallations;
+        private static readonly AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>> _discoverInstallations;
 
-		static AntigravityExternalEditor()
-		{
-			if (!UnityInstallation.IsMainUnityEditorProcess)
-				return;
+        static AntigravityExternalEditor()
+        {
+            if (!UnityInstallation.IsMainUnityEditorProcess)
+                return;
 
-			Discovery.Initialize();
-			CodeEditor.Register(new AntigravityExternalEditor());
+            Discovery.Initialize();
+            CodeEditor.Register(new AntigravityExternalEditor());
 
-			_discoverInstallations = AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>>.Run(DiscoverInstallations);
-		}
+            _discoverInstallations = AsyncOperation<Dictionary<string, IAntigravityBaseInstallation>>.Run(DiscoverInstallations);
+        }
 
 #if UNITY_2019_4_OR_NEWER && !UNITY_2020
 		[InitializeOnLoadMethod]
@@ -142,257 +268,258 @@ namespace Antigravity.Editor
 		}
 #endif
 
-		private static Dictionary<string, IAntigravityBaseInstallation> DiscoverInstallations()
-		{
-			try
-			{
-				var dict = new Dictionary<string, IAntigravityBaseInstallation>();
-				foreach (var installation in Discovery.GetAntigravityBaseInstallations())
-				{
-					var fullPath = Path.GetFullPath(installation.Path);
-					if (!dict.ContainsKey(fullPath))
-					{
-						dict[fullPath] = installation;
-					}
-				}
-				return dict;
-			}
-			catch (Exception ex)
-			{
-				Debug.LogError($"Error detecting Visual Studio installations: {ex}");
-				return new Dictionary<string, IAntigravityBaseInstallation>();
-			}
-		}
+        private static Dictionary<string, IAntigravityBaseInstallation> DiscoverInstallations()
+        {
+            try
+            {
+                var dict = new Dictionary<string, IAntigravityBaseInstallation>();
+                foreach (var installation in Discovery.GetAntigravityBaseInstallations())
+                {
+                    var fullPath = Path.GetFullPath(installation.Path);
+                    if (!dict.ContainsKey(fullPath))
+                    {
+                        dict[fullPath] = installation;
+                    }
+                }
+                return dict;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error detecting Visual Studio installations: {ex}");
+                return new Dictionary<string, IAntigravityBaseInstallation>();
+            }
+        }
 
-		internal static bool IsEnabled => CodeEditor.CurrentEditor is AntigravityExternalEditor && UnityInstallation.IsMainUnityEditorProcess;
+        internal static bool IsEnabled => CodeEditor.CurrentEditor is AntigravityExternalEditor && UnityInstallation.IsMainUnityEditorProcess;
 
-		// this one seems legacy and not used anymore
-		// keeping it for now given it is public, so we need a major bump to remove it 
-		internal void CreateIfDoesntExist()
-		{
-			if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation)) 
-				return;
+        // this one seems legacy and not used anymore
+        // keeping it for now given it is public, so we need a major bump to remove it 
+        internal void CreateIfDoesntExist()
+        {
+            if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+                return;
 
-			var generator = installation.ProjectGenerator;
-			if (!generator.HasSolutionBeenGenerated())
-				generator.Sync();
-		}
+            var generator = installation.ProjectGenerator;
+            if (!generator.HasSolutionBeenGenerated())
+                generator.Sync();
+        }
 
-		public void Initialize(string editorInstallationPath)
-		{
-		}
+        public void Initialize(string editorInstallationPath)
+        {
+        }
 
-		internal virtual bool TryGetAntigravityBaseInstallationForPath(string editorPath, bool lookupDiscoveredInstallations, out IAntigravityBaseInstallation installation)
-		{
-			editorPath = Path.GetFullPath(editorPath);
+        internal virtual bool TryGetAntigravityBaseInstallationForPath(string editorPath, bool lookupDiscoveredInstallations, out IAntigravityBaseInstallation installation)
+        {
+            editorPath = Path.GetFullPath(editorPath);
 
-			// lookup for well known installations
-			if (lookupDiscoveredInstallations && _discoverInstallations.Result.TryGetValue(editorPath, out installation))
-				return true;
+            // lookup for well known installations
+            if (lookupDiscoveredInstallations && _discoverInstallations.Result.TryGetValue(editorPath, out installation))
+                return true;
 
-			return Discovery.TryDiscoverInstallation(editorPath, out installation);
-		}
+            return Discovery.TryDiscoverInstallation(editorPath, out installation);
+        }
 
-		public virtual bool TryGetInstallationForPath(string editorPath, out CodeEditor.Installation installation)
-		{
-			var result = TryGetAntigravityBaseInstallationForPath(editorPath, lookupDiscoveredInstallations: false, out var vsi);
-			installation = vsi?.ToCodeEditorInstallation() ?? default;
-			return result;
-		}
+        public virtual bool TryGetInstallationForPath(string editorPath, out CodeEditor.Installation installation)
+        {
+            var result = TryGetAntigravityBaseInstallationForPath(editorPath, lookupDiscoveredInstallations: false, out var vsi);
+            installation = vsi?.ToCodeEditorInstallation() ?? default;
+            return result;
+        }
 
-		public void OnGUI()
-		{
-			GUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
+        public void OnGUI()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
 
-			if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
-				return;
+            if (!TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+                return;
 
-			var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(GetType().Assembly);
+            var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(GetType().Assembly);
 
-			var style = new GUIStyle
-			{
-				richText = true,
-				margin = new RectOffset(0, 4, 0, 0)
-			};
+            var style = new GUIStyle
+            {
+                richText = true,
+                margin = new RectOffset(0, 4, 0, 0)
+            };
 
-			GUILayout.Label($"<size=10><color=grey>{package.displayName} v{package.version} enabled</color></size>", style);
-			GUILayout.EndHorizontal();
+            GUILayout.Label($"<size=10><color=grey>{package.displayName} v{package.version} enabled</color></size>", style);
+            GUILayout.EndHorizontal();
 
-			if (installation is AntigravityInstallation)
-			{
-				var reuseWindow = EditorPrefs.GetBool(AntigravityInstallation.ReuseExistingWindowKey, false);
-				var newReuseWindow = EditorGUILayout.Toggle(new GUIContent("Reuse existing Antigravity window", "When enabled, opens files in an existing Antigravity window if found. When disabled, always opens a new window."), reuseWindow);
-				if (newReuseWindow != reuseWindow)
-					EditorPrefs.SetBool(AntigravityInstallation.ReuseExistingWindowKey, newReuseWindow);
-				
-				EditorGUILayout.Space();
-			}
+            if (installation is AntigravityInstallation)
+            {
+                var reuseWindow = EditorPrefs.GetBool(AntigravityInstallation.ReuseExistingWindowKey, false);
+                var newReuseWindow = EditorGUILayout.Toggle(new GUIContent("Reuse existing Antigravity window", "When enabled, opens files in an existing Antigravity window if found. When disabled, always opens a new window."), reuseWindow);
+                if (newReuseWindow != reuseWindow)
+                    EditorPrefs.SetBool(AntigravityInstallation.ReuseExistingWindowKey, newReuseWindow);
 
-			EditorGUILayout.LabelField("Generate .csproj files for:");
-			EditorGUI.indentLevel++;
-			SettingsButton(ProjectGenerationFlag.Embedded, "Embedded packages", "", installation);
-			SettingsButton(ProjectGenerationFlag.Local, "Local packages", "", installation);
-			SettingsButton(ProjectGenerationFlag.Registry, "Registry packages", "", installation);
-			SettingsButton(ProjectGenerationFlag.Git, "Git packages", "", installation);
-			SettingsButton(ProjectGenerationFlag.BuiltIn, "Built-in packages", "", installation);
-			SettingsButton(ProjectGenerationFlag.LocalTarBall, "Local tarball", "", installation);
-			SettingsButton(ProjectGenerationFlag.Unknown, "Packages from unknown sources", "", installation);
-			SettingsButton(ProjectGenerationFlag.PlayerAssemblies, "Player projects", "For each player project generate an additional csproj with the name 'project-player.csproj'", installation);
-			RegenerateProjectFiles(installation);
-			EditorGUI.indentLevel--;
-		}
+                EditorGUILayout.Space();
+            }
 
-		private static void RegenerateProjectFiles(IAntigravityBaseInstallation installation)
-		{
-			var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
-			rect.width = 252;
-			if (GUI.Button(rect, "Regenerate project files"))
-			{
-				installation.ProjectGenerator.Sync();
-			}
-		}
+            EditorGUILayout.LabelField("Generate .csproj files for:");
+            EditorGUI.indentLevel++;
+            SettingsButton(ProjectGenerationFlag.Embedded, "Embedded packages", "", installation);
+            SettingsButton(ProjectGenerationFlag.Local, "Local packages", "", installation);
+            SettingsButton(ProjectGenerationFlag.Registry, "Registry packages", "", installation);
+            SettingsButton(ProjectGenerationFlag.Git, "Git packages", "", installation);
+            SettingsButton(ProjectGenerationFlag.BuiltIn, "Built-in packages", "", installation);
+            SettingsButton(ProjectGenerationFlag.LocalTarBall, "Local tarball", "", installation);
+            SettingsButton(ProjectGenerationFlag.Unknown, "Packages from unknown sources", "", installation);
+            SettingsButton(ProjectGenerationFlag.PlayerAssemblies, "Player projects", "For each player project generate an additional csproj with the name 'project-player.csproj'", installation);
+            RegenerateProjectFiles(installation);
+            EditorGUI.indentLevel--;
+        }
 
-		private static void SettingsButton(ProjectGenerationFlag preference, string guiMessage, string toolTip, IAntigravityBaseInstallation installation)
-		{
-			var generator = installation.ProjectGenerator;
-			var prevValue = generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(preference);
+        private static void RegenerateProjectFiles(IAntigravityBaseInstallation installation)
+        {
+            var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+            rect.width = 252;
+            if (GUI.Button(rect, "Regenerate project files"))
+            {
+                installation.ProjectGenerator.Sync();
+            }
+        }
 
-			var newValue = EditorGUILayout.Toggle(new GUIContent(guiMessage, toolTip), prevValue);
-			if (newValue != prevValue)
-				generator.AssemblyNameProvider.ToggleProjectGeneration(preference);
-		}
+        private static void SettingsButton(ProjectGenerationFlag preference, string guiMessage, string toolTip, IAntigravityBaseInstallation installation)
+        {
+            var generator = installation.ProjectGenerator;
+            var prevValue = generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(preference);
 
-		public void SyncIfNeeded(string[] addedFiles, string[] deletedFiles, string[] movedFiles, string[] movedFromFiles, string[] importedFiles)
-		{
-			if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
-			{
-				installation.ProjectGenerator.SyncIfNeeded(addedFiles.Union(deletedFiles).Union(movedFiles).Union(movedFromFiles), importedFiles);
-			}
+            var newValue = EditorGUILayout.Toggle(new GUIContent(guiMessage, toolTip), prevValue);
+            if (newValue != prevValue)
+                generator.AssemblyNameProvider.ToggleProjectGeneration(preference);
+        }
 
-			foreach (var file in importedFiles.Where(a => Path.GetExtension(a) == ".pdb"))
-			{
-				var pdbFile = FileUtility.GetAssetFullPath(file);
+        public void SyncIfNeeded(string[] addedFiles, string[] deletedFiles, string[] movedFiles, string[] movedFromFiles, string[] importedFiles)
+        {
+            if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+            {
+                installation.ProjectGenerator.SyncIfNeeded(addedFiles.Union(deletedFiles).Union(movedFiles).Union(movedFromFiles), importedFiles);
+            }
 
-				// skip Unity packages like com.unity.ext.nunit
-				if (pdbFile.IndexOf($"{Path.DirectorySeparatorChar}com.unity.", StringComparison.OrdinalIgnoreCase) > 0)
-					continue;
+            foreach (var file in importedFiles.Where(a => Path.GetExtension(a) == ".pdb"))
+            {
+                var pdbFile = FileUtility.GetAssetFullPath(file);
 
-				var asmFile = Path.ChangeExtension(pdbFile, ".dll");
-				if (!File.Exists(asmFile) || !Image.IsAssembly(asmFile))
-					continue;
+                // skip Unity packages like com.unity.ext.nunit
+                if (pdbFile.IndexOf($"{Path.DirectorySeparatorChar}com.unity.", StringComparison.OrdinalIgnoreCase) > 0)
+                    continue;
 
-				if (Symbols.IsPortableSymbolFile(pdbFile))
-					continue;
+                var asmFile = Path.ChangeExtension(pdbFile, ".dll");
+                if (!File.Exists(asmFile) || !Image.IsAssembly(asmFile))
+                    continue;
 
-				Debug.LogWarning($"Unity is only able to load mdb or portable-pdb symbols. {file} is using a legacy pdb format.");
-			}
-		}
+                if (Symbols.IsPortableSymbolFile(pdbFile))
+                    continue;
 
-		public void SyncAll()
-		{
-			if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
-			{
-				installation.ProjectGenerator.Sync();
-			}
-		}
+                Debug.LogWarning($"Unity is only able to load mdb or portable-pdb symbols. {file} is using a legacy pdb format.");
+            }
+        }
 
-		private static bool IsSupportedPath(string path, IGenerator generator)
-		{
-			// Path is empty with "Open C# Project", as we only want to open the solution without specific files
-			if (string.IsNullOrEmpty(path))
-				return true;
+        public void SyncAll()
+        {
+            if (TryGetAntigravityBaseInstallationForPath(CodeEditor.CurrentEditorInstallation, true, out var installation))
+            {
+                installation.ProjectGenerator.Sync();
+            }
+        }
 
-			// cs, uxml, uss, shader, compute, cginc, hlsl, glslinc, template are part of Unity builtin extensions
-			// txt, xml, fnt, cd are -often- par of Unity user extensions
-			// asdmdef is mandatory included
-			return generator.IsSupportedFile(path);
-		}
+        private static bool IsSupportedPath(string path, IGenerator generator)
+        {
+            // Path is empty with "Open C# Project", as we only want to open the solution without specific files
+            if (string.IsNullOrEmpty(path))
+                return true;
 
-		public bool OpenProject(string path, int line, int column)
-		{
-			var editorPath = CodeEditor.CurrentEditorInstallation;
+            // cs, uxml, uss, shader, compute, cginc, hlsl, glslinc, template are part of Unity builtin extensions
+            // txt, xml, fnt, cd are -often- par of Unity user extensions
+            // asdmdef is mandatory included
+            return generator.IsSupportedFile(path);
+        }
 
-			if (!Discovery.TryDiscoverInstallation(editorPath, out var installation)) {
-				Debug.LogWarning($"Visual Studio executable {editorPath} is not found. Please change your settings in Edit > Preferences > External Tools.");
-				return false;
-			}
+        public bool OpenProject(string path, int line, int column)
+        {
+            var editorPath = CodeEditor.CurrentEditorInstallation;
 
-			var generator = installation.ProjectGenerator;
-			if (!IsSupportedPath(path, generator))
-				return false;
+            if (!Discovery.TryDiscoverInstallation(editorPath, out var installation))
+            {
+                Debug.LogWarning($"Visual Studio executable {editorPath} is not found. Please change your settings in Edit > Preferences > External Tools.");
+                return false;
+            }
 
-			if (!IsProjectGeneratedFor(path, generator, out var missingFlag))
-				Debug.LogWarning($"You are trying to open {path} outside a generated project. This might cause problems with IntelliSense and debugging. To avoid this, you can change your .csproj preferences in Edit > Preferences > External Tools and enable {GetProjectGenerationFlagDescription(missingFlag)} generation.");
+            var generator = installation.ProjectGenerator;
+            if (!IsSupportedPath(path, generator))
+                return false;
 
-			var solution = GetOrGenerateSolutionFile(generator);
-			return installation.Open(path, line, column, solution);
-		}
+            if (!IsProjectGeneratedFor(path, generator, out var missingFlag))
+                Debug.LogWarning($"You are trying to open {path} outside a generated project. This might cause problems with IntelliSense and debugging. To avoid this, you can change your .csproj preferences in Edit > Preferences > External Tools and enable {GetProjectGenerationFlagDescription(missingFlag)} generation.");
 
-		private static string GetProjectGenerationFlagDescription(ProjectGenerationFlag flag)
-		{
-			switch (flag)
-			{
-				case ProjectGenerationFlag.BuiltIn:
-					return "Built-in packages";
-				case ProjectGenerationFlag.Embedded:
-					return "Embedded packages";
-				case ProjectGenerationFlag.Git:
-					return "Git packages";
-				case ProjectGenerationFlag.Local:
-					return "Local packages";
-				case ProjectGenerationFlag.LocalTarBall:
-					return "Local tarball";
-				case ProjectGenerationFlag.PlayerAssemblies:
-					return "Player projects";
-				case ProjectGenerationFlag.Registry:
-					return "Registry packages";
-				case ProjectGenerationFlag.Unknown:
-					return "Packages from unknown sources";
-				default:
-					return string.Empty;
-			}
-		}
+            var solution = GetOrGenerateSolutionFile(generator);
+            return installation.Open(path, line, column, solution);
+        }
 
-		private static bool IsProjectGeneratedFor(string path, IGenerator generator, out ProjectGenerationFlag missingFlag)
-		{
-			missingFlag = ProjectGenerationFlag.None;
+        private static string GetProjectGenerationFlagDescription(ProjectGenerationFlag flag)
+        {
+            switch (flag)
+            {
+                case ProjectGenerationFlag.BuiltIn:
+                    return "Built-in packages";
+                case ProjectGenerationFlag.Embedded:
+                    return "Embedded packages";
+                case ProjectGenerationFlag.Git:
+                    return "Git packages";
+                case ProjectGenerationFlag.Local:
+                    return "Local packages";
+                case ProjectGenerationFlag.LocalTarBall:
+                    return "Local tarball";
+                case ProjectGenerationFlag.PlayerAssemblies:
+                    return "Player projects";
+                case ProjectGenerationFlag.Registry:
+                    return "Registry packages";
+                case ProjectGenerationFlag.Unknown:
+                    return "Packages from unknown sources";
+                default:
+                    return string.Empty;
+            }
+        }
 
-			// No need to check when opening the whole solution
-			if (string.IsNullOrEmpty(path))
-				return true;
+        private static bool IsProjectGeneratedFor(string path, IGenerator generator, out ProjectGenerationFlag missingFlag)
+        {
+            missingFlag = ProjectGenerationFlag.None;
 
-			// We only want to check for cs scripts
-			if (ProjectGeneration.ScriptingLanguageForFile(path) != ScriptingLanguage.CSharp)
-				return true;
+            // No need to check when opening the whole solution
+            if (string.IsNullOrEmpty(path))
+                return true;
 
-			// Even on windows, the package manager requires relative path + unix style separators for queries
-			var basePath = generator.ProjectDirectory;
-			var relativePath = path
-				.NormalizeWindowsToUnix()
-				.Replace(basePath, string.Empty)
-				.Trim(FileUtility.UnixSeparator);
+            // We only want to check for cs scripts
+            if (ProjectGeneration.ScriptingLanguageForFile(path) != ScriptingLanguage.CSharp)
+                return true;
 
-			var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(relativePath);
-			if (packageInfo == null)
-				return true;
+            // Even on windows, the package manager requires relative path + unix style separators for queries
+            var basePath = generator.ProjectDirectory;
+            var relativePath = path
+                .NormalizeWindowsToUnix()
+                .Replace(basePath, string.Empty)
+                .Trim(FileUtility.UnixSeparator);
 
-			var source = packageInfo.source;
-			if (!Enum.TryParse<ProjectGenerationFlag>(source.ToString(), out var flag))
-				return true;
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(relativePath);
+            if (packageInfo == null)
+                return true;
 
-			if (generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(flag))
-				return true;
+            var source = packageInfo.source;
+            if (!Enum.TryParse<ProjectGenerationFlag>(source.ToString(), out var flag))
+                return true;
 
-			// Return false if we found a source not flagged for generation
-			missingFlag = flag;
-			return false;
-		}
+            if (generator.AssemblyNameProvider.ProjectGenerationFlag.HasFlag(flag))
+                return true;
 
-		private static string GetOrGenerateSolutionFile(IGenerator generator)
-		{
-			generator.Sync();
-			return generator.SolutionFile();
-		}
-	}
+            // Return false if we found a source not flagged for generation
+            missingFlag = flag;
+            return false;
+        }
+
+        private static string GetOrGenerateSolutionFile(IGenerator generator)
+        {
+            generator.Sync();
+            return generator.SolutionFile();
+        }
+    }
 }
