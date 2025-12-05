@@ -54,17 +54,17 @@ namespace Antigravity.Editor
 				#endif
 
 				// launch.json 콘텐츠
-				string launchJsonContent = @$"{
+				string launchJsonContent = @$"{{
     ""version"": ""0.2.0"",
     ""configurations"": [
-        {
+        {{
             ""name"": ""Unity Editor"",
             ""type"": ""unity"",
             ""request"": ""launch"",
             ""program"": ""{unityEditorPath}""
-        }
+        }}
     ]
-}";
+}}";
 
 				// 파일 생성 또는 덮어쓰기
 				File.WriteAllText(launchJsonPath, launchJsonContent);
