@@ -48,8 +48,8 @@ namespace Antigravity.Editor
         {
             ""name"": ""Unity Editor"",
             ""type"": ""unity"",
-            ""request"": ""launch",
-            "program": "${workspaceFolder}/Library/UnityEditor.exe""
+            ""request"": ""launch"",
+            ""program"": ""${workspaceFolder}/Library/UnityEditor.exe""
         }
     ]
 }";
