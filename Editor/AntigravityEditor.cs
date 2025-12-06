@@ -18,10 +18,10 @@ using Unity.CodeEditor;
 namespace Antigravity.Editor
 {
     [InitializeOnLoad]
-    internal class AntigravityExternalEditor : IExternalCodeEditor
+    public class AntigravityExternalEditor : IExternalCodeEditor
     {
         [MenuItem("Antigravity/launch.json")]
-        private static void OpenAntigravitySettings()
+        public static void OpenAntigravitySettings()
         {
             CreateVscodeLaunchConfiguration();
         }
@@ -90,7 +90,7 @@ namespace Antigravity.Editor
         }
 
         [MenuItem("Antigravity/settings.json")]
-        private static void OpenAntigravitySettingsJson()
+        public static void OpenAntigravitySettingsJson()
         {
             CreateVscodeSettingsConfiguration();
         }
@@ -217,7 +217,7 @@ namespace Antigravity.Editor
         }
 
         [MenuItem("Antigravity/DotRush")]
-        private static void OpenAntigravityDotRush()
+        public static void OpenAntigravityDotRush()
         {
             CreateDotRushLaunchConfiguration();
         }
