@@ -215,6 +215,47 @@ namespace Antigravity.Editor
                 EditorUtility.DisplayDialog("Error", $"settings.json 생성 실패:\n{ex.Message}", "OK");
             }
         }
+
+        [MenuItem("Antigravity/DotRush")]
+        private static void OpenAntigravityDotRush()
+        {
+            CreateDotRushLaunchConfiguration();
+        }
+
+        private static void CreateDotRushLaunchConfiguration()
+        {
+            try
+            {
+                string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                string vscodeDir = Path.Combine(projectRoot, ".vscode");
+                string launchJsonPath = Path.Combine(vscodeDir, "launch.json");
+
+                if (!Directory.Exists(vscodeDir))
+                {
+                    Directory.CreateDirectory(vscodeDir);
+                }
+
+                string launchJsonContent = @"{
+    ""version"": ""0.2.0"",
+    ""configurations"": [
+        {
+            ""name"": ""Unity Editor"",
+            ""type"": ""unity"",
+            ""request"": ""attach""
+        }
+    ]
+}";
+
+                File.WriteAllText(launchJsonPath, launchJsonContent);
+                Debug.Log($"Antigravity DotRush launch.json created successfully at: {launchJsonPath}");
+                EditorUtility.DisplayDialog("Success", $"DotRush launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to create DotRush launch.json: {ex.Message}");
+                EditorUtility.DisplayDialog("Error", $"DotRush launch.json 생성 실패:\n{ex.Message}", "OK");
+            }
+        }
         CodeEditor.Installation[] IExternalCodeEditor.Installations
         {
             get
