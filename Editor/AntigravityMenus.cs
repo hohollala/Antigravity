@@ -237,7 +237,19 @@ namespace Antigravity.Editor
         {
             try
             {
-                string keybindingsPath = "/Users/supermac/Library/Application Support/Antigravity/User/keybindings.json";
+                string keybindingsPath;
+#if UNITY_EDITOR_WIN
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                keybindingsPath = Path.Combine(appData, "Antigravity", "User", "keybindings.json");
+#elif UNITY_EDITOR_OSX
+                string home = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                keybindingsPath = Path.Combine(home, "Library", "Application Support", "Antigravity", "User", "keybindings.json");
+#else
+                // Linux and others
+                string home = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                keybindingsPath = Path.Combine(home, ".config", "Antigravity", "User", "keybindings.json");
+#endif
+
                 string keybindingsDir = Path.GetDirectoryName(keybindingsPath);
 
                 if (!Directory.Exists(keybindingsDir))

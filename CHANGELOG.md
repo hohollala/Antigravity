@@ -2,6 +2,10 @@
 
 모든 notable한 변경사항은 이 파일에 기록됩니다.
 
+## [1.1.19] - 2025-12-28
+### Fixed
+- **keybindings.json 경로 하드코딩 수정**: OS별(Windows/macOS/Linux) 동적 경로 생성 지원
+
 ## [1.1.18] - 2025-12-28
 ### Added
 - **Antigravity/keybindings.json 생성 메뉴 추가**: 사용자 커스텀 `keybindings.json` 파일을 자동 생성하는 메뉴 추가
