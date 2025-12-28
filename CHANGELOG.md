@@ -2,6 +2,11 @@
 
 모든 notable한 변경사항은 이 파일에 기록됩니다.
 
+## [1.1.18] - 2025-12-28
+### Added
+- **Antigravity/keybindings.json 생성 메뉴 추가**: 사용자 커스텀 `keybindings.json` 파일을 자동 생성하는 메뉴 추가
+- **기본 단축키 설정 추가**: Explorer, Search, Debug, Extensions 뷰 단축키(Alt+1~4) 및 기타 코드 편집 단축키 제공
+
 ## [1.0.0] - 2024
 
 ### Added

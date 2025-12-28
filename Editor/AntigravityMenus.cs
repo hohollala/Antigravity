@@ -228,5 +228,98 @@ namespace Antigravity.Editor
                 EditorUtility.DisplayDialog("Error", $"DotRush launch.json 생성 실패:\n{ex.Message}", "OK");
             }
         }
+
+        /// <summary>
+        /// keybindings.json 파일을 생성하거나 업데이트합니다.
+        /// </summary>
+        [MenuItem("Antigravity/keybindings.json")]
+        public static void GenerateKeybindingsJson()
+        {
+            try
+            {
+                string keybindingsPath = "/Users/supermac/Library/Application Support/Antigravity/User/keybindings.json";
+                string keybindingsDir = Path.GetDirectoryName(keybindingsPath);
+
+                if (!Directory.Exists(keybindingsDir))
+                {
+                    Directory.CreateDirectory(keybindingsDir);
+                }
+
+                string keybindingsContent = @"// Place your key bindings in this file to override the defaults
+[
+    {
+        ""key"": ""cmd+i"",
+        ""command"": ""composerMode.agent""
+    },
+    {
+        ""key"": ""alt+f8"",
+        ""command"": ""editor.action.formatDocument"",
+        ""when"": ""editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""alt+f8"",
+        ""command"": ""editor.action.formatSelection"",
+        ""when"": ""editorHasSelection && editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""ctrl+alt+o"",
+        ""command"": ""editor.action.organizeImports"",
+        ""when"": ""editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""alt+f3"",
+        ""command"": ""revealFileInOS"",
+    },
+    {
+        ""key"": ""alt+f2"",
+        ""command"": ""workbench.files.action.showActiveFileInExplorer""
+    },
+    {
+        ""key"": ""cmd+shift+space"",
+        ""command"": ""workbench.action.quickOpen""
+    },
+    {
+        ""key"": ""ctrl+/"",
+        ""command"": ""editor.action.commentLine"",
+        ""when"": ""editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""ctrl+shift+/"",
+        ""command"": ""editor.action.blockComment"",
+        ""when"": ""editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""ctrl+l"",
+        ""command"": ""editor.action.deleteLines"",
+        ""when"": ""editorTextFocus && !editorReadonly""
+    },
+    {
+        ""key"": ""alt+1"",
+        ""command"": ""workbench.view.explorer""
+    },
+    {
+        ""key"": ""alt+2"",
+        ""command"": ""workbench.view.search""
+    },
+    {
+        ""key"": ""alt+3"",
+        ""command"": ""workbench.view.debug""
+    },
+    {
+        ""key"": ""alt+4"",
+        ""command"": ""workbench.view.extensions""
+    }
+]";
+
+                File.WriteAllText(keybindingsPath, keybindingsContent);
+                Debug.Log($"Antigravity keybindings.json updated successfully at: {keybindingsPath}");
+                EditorUtility.DisplayDialog("Success", $"keybindings.json 파일이 업데이트되었습니다.\n\n경로: {keybindingsPath}", "OK");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to update keybindings.json: {ex.Message}");
+                EditorUtility.DisplayDialog("Error", $"keybindings.json 업데이트 실패:\n{ex.Message}", "OK");
+            }
+        }
     }
 }
