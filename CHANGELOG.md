@@ -2,6 +2,11 @@
 
 모든 notable한 변경사항은 이 파일에 기록됩니다.
 
+## [1.1.20] - 2026-05-23
+### Fixed
+- **Antigravity IDE 명칭 변경 대응**: Unity External Script Editor 표시명, 자동 감지 경로, CLI 명령, 프로세스명, user data 폴더를 `Antigravity IDE` 기준으로 갱신
+- **하위 호환성 유지**: 기존 `Antigravity` 앱/명령/설정 폴더는 fallback 후보로 유지
+
 ## [1.1.19] - 2025-12-28
 ### Fixed
 - **keybindings.json 경로 하드코딩 수정**: OS별(Windows/macOS/Linux) 동적 경로 생성 지원

@@ -33,11 +33,11 @@ namespace Antigravity.Editor
                 }
                 else
                 {
-                    // Always provide Antigravity as a default option so it appears in the dropdown,
+                    // Always provide Antigravity IDE as a default option so it appears in the dropdown,
                     // even if not installed. Users can then browse for the installation path.
                     installations.Add(new CodeEditor.Installation
                     {
-                        Name = "Antigravity",
+                        Name = AntigravityProduct.DisplayName,
                         Path = AntigravityInstallation.DefaultInstallPath()
                     });
                 }
@@ -98,7 +98,7 @@ namespace Antigravity.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error detecting Visual Studio installations: {ex}");
+                Debug.LogError($"Error detecting {AntigravityProduct.DisplayName} installations: {ex}");
                 return new Dictionary<string, IAntigravityBaseInstallation>();
             }
         }
@@ -161,7 +161,7 @@ namespace Antigravity.Editor
             if (installation is AntigravityInstallation)
             {
                 var reuseWindow = EditorPrefs.GetBool(AntigravityInstallation.ReuseExistingWindowKey, false);
-                var newReuseWindow = EditorGUILayout.Toggle(new GUIContent("Reuse existing Antigravity window", "When enabled, opens files in an existing Antigravity window if found. When disabled, always opens a new window."), reuseWindow);
+                var newReuseWindow = EditorGUILayout.Toggle(new GUIContent($"Reuse existing {AntigravityProduct.DisplayName} window", $"When enabled, opens files in an existing {AntigravityProduct.DisplayName} window if found. When disabled, always opens a new window."), reuseWindow);
                 if (newReuseWindow != reuseWindow)
                     EditorPrefs.SetBool(AntigravityInstallation.ReuseExistingWindowKey, newReuseWindow);
 

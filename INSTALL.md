@@ -1,35 +1,19 @@
-# Antigravity Editor for Unity - 설치 가이드
+# Antigravity IDE Editor for Unity - 설치 가이드
 
-Antigravity를 Unity의 기본 코드 편집기로 설정하는 단계별 가이드입니다.
+Antigravity IDE를 Unity의 기본 코드 편집기로 설정하는 단계별 가이드입니다.
 
 ## 빠른 설치 (5분)
 
-### 1. Antigravity 설치
+### 1. Antigravity IDE 설치
 
-먼저 Antigravity 에디터가 설치되어 있어야 합니다.
+먼저 Antigravity IDE가 설치되어 있어야 합니다.
 
-**macOS (Homebrew)**:
-```bash
-brew install antigravity
-```
-
-**Windows (Scoop)**:
-```bash
-scoop install antigravity
-```
-
-**Linux (Cargo)**:
-```bash
-cargo install antigravity
-```
-
-**또는 공식 사이트에서 다운로드**:
-- https://antigravity.dev
+**공식 사이트에서 다운로드**:
+- https://antigravity.google/download
 
 설치 후 터미널에서 확인:
 ```bash
-which antigravity   # macOS/Linux
-where antigravity   # Windows
+antigravity-ide --version
 ```
 
 ### 2. Unity 패키지 설치
@@ -57,14 +41,14 @@ cp -r com.antigravity.editor ~/Desktop/MyUnityProject/Packages/
 
 1. Unity 에디터 > **Edit > Preferences** (Windows/Linux) 또는 **Unity > Preferences** (macOS)
 2. **External Tools** 섹션 검색
-3. **External Script Editor** 드롭다운에서 **Antigravity** 선택
+3. **External Script Editor** 드롭다운에서 **Antigravity IDE** 선택
 4. **Auto-detect Antigravity Path** 버튼 클릭
 5. 또는 **Browse** 버튼으로 수동 선택
 
 ### 4. 테스트
 
 1. 아무 C# 스크립트 파일을 **더블클릭**
-2. Antigravity가 실행되고 파일이 열려야 함
+2. Antigravity IDE가 실행되고 파일이 열려야 함
 
 완료! 🎉
 
@@ -77,50 +61,17 @@ cp -r com.antigravity.editor ~/Desktop/MyUnityProject/Packages/
 | 항목 | 최소 버전 | 권장 버전 |
 |------|---------|---------|
 | Unity | 2019.4 LTS | 2022 LTS 이상 |
-| Antigravity | 최신 | 최신 |
+| Antigravity IDE | 최신 | 최신 |
 | 운영체제 | - | Windows 10+, macOS 10.12+, Ubuntu 16.04+ |
 
 ### 단계별 설치 (상세)
 
-#### Step 1: Antigravity 설치
+#### Step 1: Antigravity IDE 설치
 
-**macOS (Homebrew)**:
+**공식 다운로드**:
 ```bash
-# Homebrew 업데이트
-brew update
-
-# Antigravity 설치
-brew install antigravity
-
 # 설치 확인
-antigravity --version
-```
-
-**Windows (Scoop)**:
-```powershell
-# Scoop 업데이트
-scoop update
-
-# Antigravity 설치
-scoop install antigravity
-
-# 설치 확인
-antigravity --version
-```
-
-**Linux (APT - Ubuntu/Debian)**:
-```bash
-# 패키지 업데이트
-sudo apt update
-
-# Antigravity 설치 (있으면)
-sudo apt install antigravity
-
-# Cargo로 설치 (권장)
-cargo install antigravity
-
-# 설치 확인
-antigravity --version
+antigravity-ide --version
 ```
 
 #### Step 2: 패키지 설치
@@ -153,19 +104,19 @@ mv com.antigravity.editor ~/path/to/project/Packages/
 1. Unity 에디터 실행
 2. **Edit > Preferences** (Windows/Linux) 또는 **Unity > Preferences** (macOS) 클릭
 3. 왼쪽 패널에서 **External Tools** 찾기
-4. **External Script Editor** 드롭다운 확인 (Antigravity가 표시되어야 함)
-5. Antigravity 선택
+4. **External Script Editor** 드롭다운 확인 (Antigravity IDE가 표시되어야 함)
+5. Antigravity IDE 선택
 
 #### Step 4: 경로 자동 감지
 
-1. Antigravity 선택 후, **Auto-detect Antigravity Path** 버튼 클릭
+1. Antigravity IDE 선택 후, **Auto-detect Antigravity Path** 버튼 클릭
 2. 자동 감지 성공 메시지 확인
 3. 또는 **Browse** 클릭하여 수동으로 선택
 
 #### Step 5: 테스트
 
 1. Unity 프로젝트에서 임의의 C# 스크립트 더블클릭
-2. Antigravity가 실행되고 파일이 열려야 함
+2. Antigravity IDE가 실행되고 파일이 열려야 함
 
 ---
 
@@ -173,29 +124,30 @@ mv com.antigravity.editor ~/path/to/project/Packages/
 
 ### 자동 감지 (권장)
 
-**Preferences > External Tools > Antigravity Editor Settings**에서:
+**Preferences > External Tools > Antigravity IDE Editor Settings**에서:
 - **Auto-detect Antigravity Path** 버튼 클릭
 - 자동으로 다음 위치에서 검색:
   - 시스템 PATH 환경변수
-  - macOS: `/usr/local/bin`, `/opt/homebrew/bin`
-  - Windows: `Program Files`, `AppData\Local\Programs`
-  - Linux: `/usr/local/bin`, `/usr/bin`, `~/.local/bin`
+  - macOS: `/Applications/Antigravity IDE*.app`
+  - Windows: `Program Files\Antigravity IDE`, `AppData\Local\Programs\Antigravity IDE`
+  - Linux: `/usr/local/bin/antigravity-ide`, `/usr/bin/antigravity-ide`, `~/.antigravity-ide`
+  - 기존 `Antigravity` 설치 위치 fallback
 
 ### 수동 설정
 
 **Browse** 버튼으로 직접 선택:
 1. 파일 브라우저 오픈
-2. Antigravity 실행 파일 선택
+2. Antigravity IDE 앱 또는 실행 파일 선택
 3. **Open** 클릭
 
 ### 터미널에서 설정 (macOS/Linux)
 
 ```bash
 # 경로 확인
-which antigravity
+which antigravity-ide
 
 # EditorPrefs에 저장 (macOS)
-defaults write com.unity3d.UnityEditor AntigravityEditorPath -string "/usr/local/bin/antigravity"
+defaults write com.unity3d.UnityEditor AntigravityEditorPath -string "/Applications/Antigravity IDE.app"
 ```
 
 ---
@@ -211,9 +163,9 @@ defaults write com.unity3d.UnityEditor AntigravityEditorPath -string "/usr/local
 2. Window > TextAsset > Package Manager 다시 열기
 3. 또는 수동으로 Packages 폴더에 복사
 
-### Antigravity가 Preferences에 나타나지 않음
+### Antigravity IDE가 Preferences에 나타나지 않음
 
-**증상**: External Script Editor 드롭다운에 Antigravity 없음
+**증상**: External Script Editor 드롭다운에 Antigravity IDE 없음
 
 **해결책**:
 1. Unity 완전 종료 (강제 종료 필요할 수 있음)
@@ -223,32 +175,32 @@ defaults write com.unity3d.UnityEditor AntigravityEditorPath -string "/usr/local
 
 ### 스크립트 더블클릭 시 실행되지 않음
 
-**증상**: 경로가 설정되어 있지만 Antigravity 실행 안 됨
+**증상**: 경로가 설정되어 있지만 Antigravity IDE 실행 안 됨
 
 **해결책**:
 1. 경로 재확인: **Browse** 버튼으로 올바른 경로 확인
 2. 경로 재설정: **Auto-detect** 또는 **Browse** 사용
 3. Unity 권한 확인: 관리자 권한으로 Unity 실행 시도
 
-### "Antigravity executable not found" 오류
+### "Antigravity IDE executable not found" 오류
 
-**증상**: Antigravity를 실행할 수 없음
+**증상**: Antigravity IDE를 실행할 수 없음
 
 **해결책**:
-1. Antigravity가 실제로 설치되었는지 확인:
+1. Antigravity IDE가 실제로 설치되었는지 확인:
    ```bash
-   which antigravity     # macOS/Linux
-   where antigravity     # Windows
+   which antigravity-ide     # macOS/Linux
+   where antigravity-ide     # Windows
    ```
 
 2. 설치 경로가 올바른지 확인:
    ```bash
-   antigravity --version
+   antigravity-ide --version
    ```
 
 3. 권한 확인 (Linux/macOS):
    ```bash
-   chmod +x /path/to/antigravity
+   chmod +x /path/to/antigravity-ide
    ```
 
 ### 경로가 저장되지 않음
@@ -308,7 +260,7 @@ copy com.antigravity.editor %APPDATA%\Unity\packages\
 ## 다음 단계
 
 1. **README.md** 읽기: 패키지 기능 상세 설명
-2. **스크립트 편집**: C# 파일 더블클릭하여 Antigravity에서 편집
+2. **스크립트 편집**: C# 파일 더블클릭하여 Antigravity IDE에서 편집
 3. **피드백**: 문제 발견 시 GitHub Issues에 보고
 
 ---

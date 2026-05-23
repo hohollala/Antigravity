@@ -40,15 +40,22 @@ namespace Antigravity.Editor
 
 		private string GetExtensionPath()
 		{
-			var vscode = IsPrerelease ? ".vscode-insiders" : ".vscode";
-			var extensionsPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), vscode, "extensions");
-			if (!Directory.Exists(extensionsPath))
-				return null;
+			var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			foreach (var extensionsPath in AntigravityProduct.ExtensionRootCandidates(userProfile, IsPrerelease))
+			{
+				if (!Directory.Exists(extensionsPath))
+					continue;
 
-			return Directory
-				.EnumerateDirectories(extensionsPath, $"{MicrosoftUnityExtensionId}*") // publisherid.extensionid
-				.OrderByDescending(n => n)
-				.FirstOrDefault();
+				var extensionPath = Directory
+					.EnumerateDirectories(extensionsPath, $"{MicrosoftUnityExtensionId}*") // publisherid.extensionid
+					.OrderByDescending(n => n)
+					.FirstOrDefault();
+
+				if (!string.IsNullOrEmpty(extensionPath))
+					return extensionPath;
+			}
+
+			return null;
 		}
 
 		public override string[] GetAnalyzers()
@@ -71,11 +78,11 @@ namespace Antigravity.Editor
 		private static bool IsCandidateForDiscovery(string path)
 		{
 #if UNITY_EDITOR_OSX
-			return Directory.Exists(path) && Regex.IsMatch(path, ".*Antigravity.*.app$", RegexOptions.IgnoreCase);
+			return Directory.Exists(path) && AntigravityProduct.IsKnownBundleName(path);
 #elif UNITY_EDITOR_WIN
-			return File.Exists(path) && Regex.IsMatch(path, ".*Antigravity.*.exe$", RegexOptions.IgnoreCase);
+			return File.Exists(path) && AntigravityProduct.IsKnownExecutableName(path);
 #else
-			return File.Exists(path) && path.EndsWith("antigravity", StringComparison.OrdinalIgnoreCase);
+			return File.Exists(path) && AntigravityProduct.IsKnownCommandName(path);
 #endif
 		}
 
@@ -120,12 +127,26 @@ namespace Antigravity.Editor
 					return false;
 
 				var manifestFullPath = IOPath.Combine(manifestBase, "resources", "app", "package.json");
+				string manifestName = null;
 				if (File.Exists(manifestFullPath))
 				{
 					var manifest = JsonUtility.FromJson<VisualStudioCodeManifest>(File.ReadAllText(manifestFullPath));
 					Version.TryParse(manifest.version.Split('-').First(), out version);
 					isPrerelease = manifest.version.ToLower().Contains("insider");
+					manifestName = manifest.name;
 				}
+
+				var displayName = AntigravityProduct.DisplayNameForPath(editorPath, manifestName);
+				isPrerelease = isPrerelease || editorPath.ToLower().Contains("insider");
+				installation = new AntigravityInstallation()
+				{
+					IsPrerelease = isPrerelease,
+					Name = displayName + (isPrerelease ? " - Insider" : string.Empty) + (version != null ? $" [{version.ToString(3)}]" : string.Empty),
+					Path = editorPath,
+					Version = version ?? new Version()
+				};
+
+				return true;
 			}
 			catch (Exception)
 			{
@@ -136,7 +157,7 @@ namespace Antigravity.Editor
 			installation = new AntigravityInstallation()
 			{
 				IsPrerelease = isPrerelease,
-				Name = "Antigravity" + (isPrerelease ? " - Insider" : string.Empty) + (version != null ? $" [{version.ToString(3)}]" : string.Empty),
+				Name = AntigravityProduct.DisplayNameForPath(editorPath, null) + (isPrerelease ? " - Insider" : string.Empty) + (version != null ? $" [{version.ToString(3)}]" : string.Empty),
 				Path = editorPath,
 				Version = version ?? new Version()
 			};
@@ -152,14 +173,27 @@ namespace Antigravity.Editor
 			var localAppPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs");
 			var programFiles = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
 
-			foreach (var basePath in new[] { localAppPath, programFiles }) {
+			foreach (var basePath in new[] { localAppPath, programFiles })
+			{
+				candidates.Add(IOPath.Combine(basePath, "Antigravity IDE", "antigravity-ide.exe"));
+				candidates.Add(IOPath.Combine(basePath, "Antigravity IDE", "Antigravity IDE.exe"));
+				candidates.Add(IOPath.Combine(basePath, "antigravity-ide", "antigravity-ide.exe"));
 				candidates.Add(IOPath.Combine(basePath, "antigravity", "antigravity.exe"));
 			}
 #elif UNITY_EDITOR_OSX
 			var appPath = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+			candidates.AddRange(Directory.EnumerateDirectories(appPath, "Antigravity IDE*.app"));
 			candidates.AddRange(Directory.EnumerateDirectories(appPath, "Antigravity*.app"));
 #elif UNITY_EDITOR_LINUX
 			// Well known locations
+			candidates.Add("/usr/bin/antigravity-ide");
+			candidates.Add("/bin/antigravity-ide");
+			candidates.Add("/usr/local/bin/antigravity-ide");
+			candidates.Add("/usr/bin/agy-ide");
+			candidates.Add("/bin/agy-ide");
+			candidates.Add("/usr/local/bin/agy-ide");
+			var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			candidates.Add(IOPath.Combine(home, ".antigravity-ide", "antigravity-ide", "bin", "antigravity-ide"));
 			candidates.Add("/usr/bin/antigravity");
 			candidates.Add("/bin/antigravity");
 			candidates.Add("/usr/local/bin/antigravity");
@@ -174,34 +208,34 @@ namespace Antigravity.Editor
 					yield return installation;
 			}
 
-            // Fallback: If no installation is found, provide a default one so it appears in the list
-            if (TryDiscoverInstallation(DefaultInstallPath(), out var defaultInstallation))
-            {
-                yield return defaultInstallation;
-            }
-            else
-            {
-                // Force return a default installation object even if file doesn't exist,
-                // so the user can see "Antigravity" in the list and browse manually.
-                yield return new AntigravityInstallation
-                {
-                    Name = "Antigravity",
-                    Path = DefaultInstallPath(),
-                    Version = new Version()
-                };
-            }
+			// Fallback: If no installation is found, provide a default one so it appears in the list
+			if (TryDiscoverInstallation(DefaultInstallPath(), out var defaultInstallation))
+			{
+				yield return defaultInstallation;
+			}
+			else
+			{
+				// Force return a default installation object even if file doesn't exist,
+				// so the user can see Antigravity IDE in the list and browse manually.
+				yield return new AntigravityInstallation
+				{
+					Name = AntigravityProduct.DisplayName,
+					Path = DefaultInstallPath(),
+					Version = new Version()
+				};
+			}
 		}
 
-        public static string DefaultInstallPath()
-        {
+		public static string DefaultInstallPath()
+		{
 #if UNITY_EDITOR_WIN
-            return "C:\\Program Files\\Antigravity\\antigravity.exe";
+			return "C:\\Program Files\\Antigravity IDE\\antigravity-ide.exe";
 #elif UNITY_EDITOR_OSX
-            return "/Applications/Antigravity.app";
+			return "/Applications/Antigravity IDE.app";
 #else
-            return "/usr/bin/antigravity";
+			return "/usr/bin/antigravity-ide";
 #endif
-        }
+		}
 
 #if UNITY_EDITOR_LINUX
 		private static readonly Regex DesktopFileExecEntry = new Regex(@"Exec=(\S+)", RegexOptions.Singleline | RegexOptions.Compiled);
@@ -546,13 +580,19 @@ namespace Antigravity.Editor
 
 			// Get process name list based on different operating systems
 #if UNITY_EDITOR_OSX
-			processes.AddRange(Process.GetProcessesByName("Antigravity"));
-			processes.AddRange(Process.GetProcessesByName("Antigravity Helper"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity IDE"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity IDE Helper"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity Helper"));
 #elif UNITY_EDITOR_LINUX
-			processes.AddRange(Process.GetProcessesByName("antigravity"));
-			processes.AddRange(Process.GetProcessesByName("Antigravity"));
+				processes.AddRange(Process.GetProcessesByName("antigravity-ide"));
+				processes.AddRange(Process.GetProcessesByName("agy-ide"));
+				processes.AddRange(Process.GetProcessesByName("antigravity"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity"));
 #else
-			processes.AddRange(Process.GetProcessesByName("antigravity"));
+				processes.AddRange(Process.GetProcessesByName("antigravity-ide"));
+				processes.AddRange(Process.GetProcessesByName("Antigravity IDE"));
+				processes.AddRange(Process.GetProcessesByName("antigravity"));
 #endif
 
 			foreach (var process in processes)

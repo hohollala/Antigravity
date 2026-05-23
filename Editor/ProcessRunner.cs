@@ -220,54 +220,56 @@ namespace Antigravity.Editor
 			{
 				var workspaces = new List<string>();
 				var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-				string antigravityStoragePath;
+				var antigravityStoragePaths = AntigravityProduct.WorkspaceStorageCandidates(userProfile)
+					.Distinct()
+					.ToArray();
+				var foundStoragePath = false;
 
-#if UNITY_EDITOR_OSX
-				antigravityStoragePath = Path.Combine(userProfile, "Library", "Application Support", "antigravity", "User", "workspaceStorage");
-#elif UNITY_EDITOR_LINUX
-				antigravityStoragePath = Path.Combine(userProfile, ".config", "Antigravity", "User", "workspaceStorage");
-#else
-				antigravityStoragePath = Path.Combine(userProfile, "AppData", "Roaming", "antigravity", "User", "workspaceStorage");
-#endif
-
-				if (!Directory.Exists(antigravityStoragePath))
+				foreach (var antigravityStoragePath in antigravityStoragePaths)
 				{
-					Debug.LogWarning($"[Antigravity] Workspace storage directory not found: {antigravityStoragePath}");
-					return new string[0];
+					if (!Directory.Exists(antigravityStoragePath))
+						continue;
+
+					foundStoragePath = true;
+					foreach (var workspaceDir in Directory.GetDirectories(antigravityStoragePath))
+					{
+						try
+						{
+							// workspace.json 처리
+							var workspaceStatePath = Path.Combine(workspaceDir, "workspace.json");
+							if (File.Exists(workspaceStatePath))
+							{
+								var workspacePath = TryGetWorkspacePath(workspaceStatePath, "folder");
+								if (!string.IsNullOrEmpty(workspacePath))
+								{
+									workspaces.Add(workspacePath);
+									continue; // workspace.json에서 찾으면 window.json은 스킵
+								}
+							}
+
+							// window.json 처리
+							var windowStatePath = Path.Combine(workspaceDir, "window.json");
+							if (File.Exists(windowStatePath))
+							{
+								var workspacePath = TryGetWorkspacePath(windowStatePath, "workspace");
+								if (!string.IsNullOrEmpty(workspacePath))
+								{
+									workspaces.Add(workspacePath);
+								}
+							}
+						}
+						catch (Exception ex)
+						{
+							Debug.LogWarning($"[Antigravity] Error reading workspace state file in {workspaceDir}: {ex.Message}");
+							continue;
+						}
+					}
 				}
 
-				foreach (var workspaceDir in Directory.GetDirectories(antigravityStoragePath))
+				if (!foundStoragePath)
 				{
-					try
-					{
-						// workspace.json 처리
-						var workspaceStatePath = Path.Combine(workspaceDir, "workspace.json");
-						if (File.Exists(workspaceStatePath))
-						{
-							var workspacePath = TryGetWorkspacePath(workspaceStatePath, "folder");
-							if (!string.IsNullOrEmpty(workspacePath))
-							{
-								workspaces.Add(workspacePath);
-								continue; // workspace.json에서 찾으면 window.json은 스킵
-							}
-						}
-
-						// window.json 처리
-						var windowStatePath = Path.Combine(workspaceDir, "window.json");
-						if (File.Exists(windowStatePath))
-						{
-							var workspacePath = TryGetWorkspacePath(windowStatePath, "workspace");
-							if (!string.IsNullOrEmpty(workspacePath))
-							{
-								workspaces.Add(workspacePath);
-							}
-						}
-					}
-					catch (Exception ex)
-					{
-						Debug.LogWarning($"[Antigravity] Error reading workspace state file in {workspaceDir}: {ex.Message}");
-						continue;
-					}
+					Debug.LogWarning($"[Antigravity] Workspace storage directory not found: {string.Join(", ", antigravityStoragePaths)}");
+					return new string[0];
 				}
 
 				return workspaces.Distinct().ToArray();

@@ -7,7 +7,7 @@ namespace Antigravity.Editor
 {
     public static class AntigravityMenus
     {
-        [MenuItem("Antigravity/launch.json")]
+        [MenuItem("Antigravity IDE/launch.json")]
         public static void GenerateLaunchJson()
         {
             try
@@ -61,7 +61,7 @@ namespace Antigravity.Editor
                 // 파일 생성 또는 덮어쓰기
                 File.WriteAllText(launchJsonPath, launchJsonContent);
 
-                Debug.Log($"Antigravity launch.json created successfully at: {launchJsonPath}");
+                Debug.Log($"{AntigravityProduct.DisplayName} launch.json created successfully at: {launchJsonPath}");
                 EditorUtility.DisplayDialog("Success", $".vscode/launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
             }
             catch (Exception ex)
@@ -71,7 +71,7 @@ namespace Antigravity.Editor
             }
         }
 
-        [MenuItem("Antigravity/settings.json")]
+        [MenuItem("Antigravity IDE/settings.json")]
         public static void GenerateSettingsJson()
         {
             try
@@ -183,7 +183,7 @@ namespace Antigravity.Editor
 }}";
 
                 File.WriteAllText(settingsJsonPath, settingsJsonContent);
-                Debug.Log($"Antigravity settings.json created successfully at: {settingsJsonPath}");
+                Debug.Log($"{AntigravityProduct.DisplayName} settings.json created successfully at: {settingsJsonPath}");
                 EditorUtility.DisplayDialog("Success", $".vscode/settings.json 파일이 생성되었습니다.\n\n경로: {settingsJsonPath}", "OK");
             }
             catch (Exception ex)
@@ -193,7 +193,7 @@ namespace Antigravity.Editor
             }
         }
 
-        [MenuItem("Antigravity/DotRush")]
+        [MenuItem("Antigravity IDE/DotRush")]
         public static void GenerateDotRushLaunchJson()
         {
             try
@@ -219,7 +219,7 @@ namespace Antigravity.Editor
 }";
 
                 File.WriteAllText(launchJsonPath, launchJsonContent);
-                Debug.Log($"Antigravity DotRush launch.json created successfully at: {launchJsonPath}");
+                Debug.Log($"{AntigravityProduct.DisplayName} DotRush launch.json created successfully at: {launchJsonPath}");
                 EditorUtility.DisplayDialog("Success", $"DotRush launch.json 파일이 생성되었습니다.\n\n경로: {launchJsonPath}", "OK");
             }
             catch (Exception ex)
@@ -232,23 +232,13 @@ namespace Antigravity.Editor
         /// <summary>
         /// keybindings.json 파일을 생성하거나 업데이트합니다.
         /// </summary>
-        [MenuItem("Antigravity/keybindings.json")]
+        [MenuItem("Antigravity IDE/keybindings.json")]
         public static void GenerateKeybindingsJson()
         {
             try
             {
-                string keybindingsPath;
-#if UNITY_EDITOR_WIN
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                keybindingsPath = Path.Combine(appData, "Antigravity", "User", "keybindings.json");
-#elif UNITY_EDITOR_OSX
-                string home = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                keybindingsPath = Path.Combine(home, "Library", "Application Support", "Antigravity", "User", "keybindings.json");
-#else
-                // Linux and others
-                string home = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                keybindingsPath = Path.Combine(home, ".config", "Antigravity", "User", "keybindings.json");
-#endif
+                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string keybindingsPath = AntigravityProduct.UserKeybindingsPath(userProfile);
 
                 string keybindingsDir = Path.GetDirectoryName(keybindingsPath);
 
@@ -324,7 +314,7 @@ namespace Antigravity.Editor
 ]";
 
                 File.WriteAllText(keybindingsPath, keybindingsContent);
-                Debug.Log($"Antigravity keybindings.json updated successfully at: {keybindingsPath}");
+                Debug.Log($"{AntigravityProduct.DisplayName} keybindings.json updated successfully at: {keybindingsPath}");
                 EditorUtility.DisplayDialog("Success", $"keybindings.json 파일이 업데이트되었습니다.\n\n경로: {keybindingsPath}", "OK");
             }
             catch (Exception ex)

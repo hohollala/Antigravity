@@ -1,13 +1,13 @@
-# Antigravity Editor for Unity
+# Antigravity IDE Editor for Unity
 
-Unity 외부 스크립트 편집기로 Antigravity를 사용하기 위한 공식 통합 패키지입니다.
+Unity 외부 스크립트 편집기로 Antigravity IDE를 사용하기 위한 공식 통합 패키지입니다.
 
 ## 기능
 
-- ✅ Antigravity 자동 감지 및 설치
+- ✅ Antigravity IDE 자동 감지 및 설치
 - ✅ Unity Preferences에서 간단한 경로 설정
 - ✅ Windows, macOS, Linux 완벽 지원
-- ✅ 스크립트 더블클릭 시 자동으로 Antigravity 실행
+- ✅ 스크립트 더블클릭 시 자동으로 Antigravity IDE 실행
 - ✅ 파일, 라인, 컬럼 정보 자동 전달
 
 ## 설치 방법
@@ -39,11 +39,11 @@ Unity 2019.4 이상에서:
 
 ## 사용 방법
 
-### 1단계: Antigravity 경로 설정
+### 1단계: Antigravity IDE 경로 설정
 
 1. Unity 에디터 > **Edit > Preferences** (Windows) 또는 **Unity > Preferences** (macOS) 열기
 2. **External Tools** 섹션으로 이동
-3. **External Script Editor** 드롭다운에서 **Antigravity** 선택
+3. **External Script Editor** 드롭다운에서 **Antigravity IDE** 선택
 4. 경로를 설정합니다:
    - **자동 감지** 버튼을 클릭하거나
    - **Browse** 버튼으로 수동 선택
@@ -51,67 +51,67 @@ Unity 2019.4 이상에서:
 ### 2단계: 스크립트 편집
 
 1. Unity 프로젝트에서 C# 스크립트 파일을 **더블클릭**
-2. Antigravity가 자동으로 실행되고 파일이 열립니다
+2. Antigravity IDE가 자동으로 실행되고 파일이 열립니다
 
 ## 설정
 
 ### 자동 감지
 
-Antigravity가 표준 위치에 설치된 경우, **Auto-detect Antigravity Path** 버튼을 클릭하여 자동으로 감지합니다.
+Antigravity IDE가 표준 위치에 설치된 경우, **Auto-detect Antigravity Path** 버튼을 클릭하여 자동으로 감지합니다.
 
 지원하는 위치:
 - **Windows**:
-  - `C:\Program Files\Antigravity\antigravity.exe`
-  - `AppData\Local\Programs\Antigravity\antigravity.exe`
-  - Scoop 설치 위치
+  - `C:\Program Files\Antigravity IDE\antigravity-ide.exe`
+  - `AppData\Local\Programs\Antigravity IDE\antigravity-ide.exe`
+  - 기존 `Antigravity\antigravity.exe` fallback
 
 - **macOS**:
-  - `/usr/local/bin/antigravity`
-  - `/opt/homebrew/bin/antigravity`
-  - `~/.cargo/bin/antigravity` (Cargo)
+  - `/Applications/Antigravity IDE.app`
+  - `/Applications/Antigravity IDE 2.app`
+  - 기존 `/Applications/Antigravity.app` fallback
 
 - **Linux**:
-  - `/usr/local/bin/antigravity`
-  - `/usr/bin/antigravity`
-  - `~/.cargo/bin/antigravity`
-  - `~/.local/bin/antigravity`
+  - `/usr/local/bin/antigravity-ide`
+  - `/usr/bin/antigravity-ide`
+  - `~/.antigravity-ide/antigravity-ide/bin/antigravity-ide`
+  - `agy-ide` 및 기존 `antigravity` fallback
 
 ### 수동 설정
 
-**Browse** 버튼을 클릭하여 Antigravity 실행 파일을 수동으로 선택합니다.
+**Browse** 버튼을 클릭하여 Antigravity IDE 앱 또는 실행 파일을 수동으로 선택합니다.
 
 ## 문제 해결
 
-### Antigravity가 External Script Editor 드롭다운에 나타나지 않음
+### Antigravity IDE가 External Script Editor 드롭다운에 나타나지 않음
 
 **해결책:**
 1. Unity 에디터를 완전히 종료
 2. 다시 실행하여 스크립트 재컴파일 대기
 3. **Preferences > External Tools**로 이동하여 확인
 
-### 스크립트를 더블클릭해도 Antigravity가 열리지 않음
+### 스크립트를 더블클릭해도 Antigravity IDE가 열리지 않음
 
 **해결책:**
 1. **Preferences > External Tools**에서 경로가 올바르게 설정되었는지 확인
 2. 파일 경로가 정확한지 확인:
    ```bash
-   which antigravity  # macOS/Linux
-   where antigravity  # Windows
+   which antigravity-ide  # macOS/Linux
+   where antigravity-ide  # Windows
    ```
 3. 경로를 수동으로 설정 시도
 
 ### 권한 오류 (Linux/macOS)
 
-Antigravity 실행 파일에 실행 권한이 있는지 확인:
+Antigravity IDE 실행 파일에 실행 권한이 있는지 확인:
 
 ```bash
-chmod +x /path/to/antigravity
+chmod +x /path/to/antigravity-ide
 ```
 
 ## 요구사항
 
 - **Unity**: 2019.4 LTS 이상
-- **Antigravity**: 최신 버전
+- **Antigravity IDE**: 최신 버전
 - **운영체제**: Windows, macOS, Linux
 
 ## 개발자 정보
