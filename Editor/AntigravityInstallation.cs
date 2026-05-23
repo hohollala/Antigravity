@@ -649,7 +649,7 @@ namespace Antigravity.Editor
 			column = Math.Max(0, column);
 
 			var directory = IOPath.GetDirectoryName(solution);
-			var application = Path;
+			var application = AntigravityProduct.ResolveLaunchPath(Path);
 
 			var workspace = TryFindWorkspace(directory);
 			workspace ??= directory;

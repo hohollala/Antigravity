@@ -56,6 +56,54 @@ namespace Antigravity.Editor
             return LegacyDisplayName;
         }
 
+        internal static string ResolveLaunchPath(string selectedPath)
+        {
+            return ResolveLaunchPath(selectedPath, IdeInstallCandidates(), PathExists);
+        }
+
+        internal static string ResolveLaunchPath(string selectedPath, IEnumerable<string> ideCandidates, Func<string, bool> exists)
+        {
+            if (!IsLegacyPath(selectedPath))
+                return selectedPath;
+
+            var preferredIdePath = ideCandidates.FirstOrDefault(exists);
+            return string.IsNullOrEmpty(preferredIdePath) ? selectedPath : preferredIdePath;
+        }
+
+        internal static IEnumerable<string> IdeInstallCandidates()
+        {
+#if UNITY_EDITOR_OSX
+            yield return "/Applications/Antigravity IDE.app";
+
+            var applications = "/Applications";
+            if (Directory.Exists(applications))
+            {
+                foreach (var path in Directory.EnumerateDirectories(applications, "Antigravity IDE*.app").OrderBy(path => path))
+                    yield return path;
+            }
+#elif UNITY_EDITOR_WIN
+            var localAppPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs");
+            var programFiles = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+
+            foreach (var basePath in new[] { localAppPath, programFiles })
+            {
+                yield return Path.Combine(basePath, "Antigravity IDE", "antigravity-ide.exe");
+                yield return Path.Combine(basePath, "Antigravity IDE", "Antigravity IDE.exe");
+                yield return Path.Combine(basePath, "antigravity-ide", "antigravity-ide.exe");
+            }
+#else
+            yield return "/usr/bin/antigravity-ide";
+            yield return "/bin/antigravity-ide";
+            yield return "/usr/local/bin/antigravity-ide";
+            yield return "/usr/bin/agy-ide";
+            yield return "/bin/agy-ide";
+            yield return "/usr/local/bin/agy-ide";
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            yield return Path.Combine(home, ".antigravity-ide", "antigravity-ide", "bin", "antigravity-ide");
+#endif
+        }
+
         internal static IEnumerable<string> ExtensionRootCandidates(string userProfile, bool isPrerelease)
         {
             yield return Path.Combine(userProfile, ".antigravity-ide", "extensions");
@@ -114,6 +162,20 @@ namespace Antigravity.Editor
                 return string.Empty;
 
             return Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        }
+
+        private static bool IsLegacyPath(string path)
+        {
+            var name = LastPathSegment(path);
+            return ContainsIgnoreCase(name, LegacyDisplayName) &&
+                !ContainsIgnoreCase(name, DisplayName) &&
+                !ContainsIgnoreCase(name, ApplicationName) &&
+                !ContainsIgnoreCase(name, AliasName);
+        }
+
+        private static bool PathExists(string path)
+        {
+            return Directory.Exists(path) || File.Exists(path);
         }
 
         private static bool ContainsIgnoreCase(string value, string search)

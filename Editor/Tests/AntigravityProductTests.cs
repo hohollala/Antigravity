@@ -62,5 +62,38 @@ namespace Antigravity.Editor.Tests
 
             Assert.That(candidates[0], Does.EndWith(Path.Combine("User", "workspaceStorage")));
         }
+
+        [Test]
+        public void ResolveLaunchPathMapsLegacyAntigravitySelectionToInstalledIde()
+        {
+            var resolvedPath = AntigravityProduct.ResolveLaunchPath(
+                "/Applications/Antigravity.app",
+                new[] { "/Applications/Antigravity IDE.app" },
+                path => path == "/Applications/Antigravity IDE.app");
+
+            Assert.AreEqual("/Applications/Antigravity IDE.app", resolvedPath);
+        }
+
+        [Test]
+        public void ResolveLaunchPathKeepsLegacySelectionWhenIdeIsNotInstalled()
+        {
+            var resolvedPath = AntigravityProduct.ResolveLaunchPath(
+                "/Applications/Antigravity.app",
+                new[] { "/Applications/Antigravity IDE.app" },
+                path => false);
+
+            Assert.AreEqual("/Applications/Antigravity.app", resolvedPath);
+        }
+
+        [Test]
+        public void ResolveLaunchPathKeepsExplicitAntigravityIdeSelection()
+        {
+            var resolvedPath = AntigravityProduct.ResolveLaunchPath(
+                "/Applications/Antigravity IDE.app",
+                new[] { "/Applications/Other IDE.app" },
+                path => true);
+
+            Assert.AreEqual("/Applications/Antigravity IDE.app", resolvedPath);
+        }
     }
 }

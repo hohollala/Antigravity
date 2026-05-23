@@ -2,6 +2,10 @@
 
 모든 notable한 변경사항은 이 파일에 기록됩니다.
 
+## [1.1.21] - 2026-05-23
+### Fixed
+- **기존 Antigravity 선택 호환**: Unity에 저장된 기존 `Antigravity` 경로가 선택되어 있어도 설치된 `Antigravity IDE`를 우선 실행하도록 보정
+
 ## [1.1.20] - 2026-05-23
 ### Fixed
 - **Antigravity IDE 명칭 변경 대응**: Unity External Script Editor 표시명, 자동 감지 경로, CLI 명령, 프로세스명, user data 폴더를 `Antigravity IDE` 기준으로 갱신
